@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.ai-order.daily-alias-summary</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>-c</string>
+        <string>/usr/bin/python3 "$AI_ORDER_WORKSPACE/learning/scripts/daily_summary.py"</string>
+    </array>
+
+    <!-- 每天 10:00 触发（独立于日报） -->
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Hour</key>
+        <integer>10</integer>
+        <key>Minute</key>
+        <integer>0</integer>
+    </dict>
+
+    <!-- 标准输出/错误 → 日志文件 -->
+    <key>StandardOutPath</key>
+    <string>/tmp/ai-order.daily-alias-summary.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/ai-order.daily-alias-summary.err.log</string>
+
+    <!-- 环境变量 -->
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+        <key>AI_ORDER_WORKSPACE</key>
+        <string>__WORKSPACE__</string>
+    </dict>
+</dict>
+</plist>

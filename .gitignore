@@ -1,0 +1,81 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.pytest_cache/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# 二进制文件（HuggingFace 不允许，GitHub 也建议排除）
+*.zip
+*.tar.gz
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.xlsx
+*.xls
+*.pdf
+
+# 临时文件
+*.tmp
+*.bak
+*.log
+
+# 输出目录中的二进制文件
+output/*.xlsx
+output/*.tar.gz
+output/*.zip
+output/sync_logs/
+test_output/
+test_output_v5140/
+
+# 备份中的二进制
+backups/**/*.tar.gz
+backups/**/*.zip
+
+# 数据库（太大）
+database/*.csv
+
+# 敏感信息
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# OpenClaw
+.openclaw/
