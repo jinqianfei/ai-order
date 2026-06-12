@@ -1,0 +1,347 @@
+[
+  {
+    "test_id": "liaoduoduo_alias_full",
+    "order_file": "廖朵朵别名表完整测试",
+    "order_format": "text",
+    "stores": [
+      {
+        "store_name": "沛县廖朵朵",
+        "ground_truth_store_code": "KH2024100600109",
+        "ground_truth_owner_code": "HZ2024091100001",
+        "ground_truth_warehouse_code": "",
+        "items": [
+          {
+            "seq": 1,
+            "product_name": "梨不开你5英寸（16个/件）",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK260315000018",
+            "ground_truth_sku_name": "不分梨慕斯蛋糕",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 2,
+            "product_name": "招财进宝金元宝（16个/件）",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK251224000132",
+            "ground_truth_sku_name": "元宝慕斯",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 3,
+            "product_name": "八方来财发财慕斯蛋糕（16个/件）",
+            "spec": "2粒/盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK250901000010",
+            "ground_truth_sku_name": "八方来财慕斯",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 4,
+            "product_name": "可爱抱心熊、女王通用款(20/件)",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK241110000194",
+            "ground_truth_sku_name": "八瓣花慕斯蛋糕",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 5,
+            "product_name": "2英寸加菲猫联名款（48个/件）",
+            "spec": "48盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK241019000017",
+            "ground_truth_sku_name": "加菲猫",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 6,
+            "product_name": "发财慕斯蛋糕（20个/件）",
+            "spec": "20盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK241130000028",
+            "ground_truth_sku_name": "发财慕斯蛋糕",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 7,
+            "product_name": "马上发红色款（20个/件）",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK260105000051",
+            "ground_truth_sku_name": "发财慕斯（红）",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 8,
+            "product_name": "浆果小甜心草莓3+1（30个/件）",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK260120000002",
+            "ground_truth_sku_name": "大小草莓慕斯",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 9,
+            "product_name": "慕斯蛋糕心月相惜（20个/件）",
+            "spec": "20盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK240911000094",
+            "ground_truth_sku_name": "廖朵朵星月慕斯蛋糕",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 10,
+            "product_name": "慕斯蛋糕一见倾心（20个/件）",
+            "spec": "20盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK240911000092",
+            "ground_truth_sku_name": "廖朵朵爱心慕斯蛋糕",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 11,
+            "product_name": "许愿蝶（20个/件）",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK240924000231",
+            "ground_truth_sku_name": "廖朵朵蝴蝶慕斯蛋糕",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 12,
+            "product_name": "爱的贴贴熊（16个/件）",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK260318000160",
+            "ground_truth_sku_name": "抱抱熊慕斯蛋糕",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 13,
+            "product_name": "双层童年木马慕斯蛋糕（20个/件）",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK250811000176",
+            "ground_truth_sku_name": "旋转木马慕斯",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 14,
+            "product_name": "海绵宝宝（48个/件）",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK260105000053",
+            "ground_truth_sku_name": "海绵宝宝慕斯蛋糕",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 15,
+            "product_name": "粉岩火山慕斯蛋糕（18个/件）",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK250831001764",
+            "ground_truth_sku_name": "火山慕斯",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 16,
+            "product_name": "告白玫瑰/9国语言我爱你（16个/件）",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK251020000214",
+            "ground_truth_sku_name": "玫瑰花园慕斯",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 17,
+            "product_name": "慕斯蛋糕白天鹅（16个/件）",
+            "spec": "16盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK250208000008",
+            "ground_truth_sku_name": "白天鹅慕斯蛋糕",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 18,
+            "product_name": "甜心小公主（20个/件）",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK251118000086",
+            "ground_truth_sku_name": "粉云朵",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 19,
+            "product_name": "云端小王子（20个/件）",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK251118000084",
+            "ground_truth_sku_name": "蓝云朵",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 20,
+            "product_name": "许愿池慕斯蛋糕（20个/件）",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK250811000178",
+            "ground_truth_sku_name": "许愿池慕斯",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 21,
+            "product_name": "兔机长（16个/件）",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK251017003518",
+            "ground_truth_sku_name": "飞机慕斯",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 22,
+            "product_name": "马上有钱（12个/件）",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK251224000134",
+            "ground_truth_sku_name": "马",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 23,
+            "product_name": "星空大G(20个/件)",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK250929000101",
+            "ground_truth_sku_name": "黑云朵",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 24,
+            "product_name": "慕斯蛋糕黑天鹅（16个/件）",
+            "spec": "16盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK250209000032",
+            "ground_truth_sku_name": "黑天鹅慕斯蛋糕",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 25,
+            "product_name": "爱与被爱｜4拼甜品组合套装(48个/2件，4拼小底托别忘记拍在下面)(1)",
+            "spec": "6个/盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK250407000165",
+            "ground_truth_sku_name": "云朵+爱心慕斯",
+            "ground_truth_unit": "袋",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 26,
+            "product_name": "爱与被爱｜4拼甜品组合套装(48个/2件，4拼小底托别忘记拍在下面)(2)",
+            "spec": "6个/盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK250411000074",
+            "ground_truth_sku_name": "蝴蝶+小熊慕斯",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 27,
+            "product_name": "爱的慕斯蛋糕（20个/件）",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK250831001766",
+            "ground_truth_sku_name": "爱字慕斯（20盒）",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 28,
+            "product_name": "小爱心2英寸（48个/件）",
+            "spec": "4粒/盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK251209000131",
+            "ground_truth_sku_name": "2寸爱心（12盒）",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 29,
+            "product_name": "小蝴蝶2英寸（48个/件）",
+            "spec": "4粒/盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK251209000135",
+            "ground_truth_sku_name": "2寸蝴蝶（12盒）",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 30,
+            "product_name": "小火苗慕斯蛋糕（48个/件）180克/个",
+            "spec": "4个/盒",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK250814000154",
+            "ground_truth_sku_name": "小火苗（48个）",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          }
+        ]
+      }
+    ]
+  }
+]

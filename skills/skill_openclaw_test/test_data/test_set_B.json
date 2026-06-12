@@ -1,0 +1,182 @@
+[
+  {
+    "test_id": "zhicha_exact_match",
+    "order_file": "制茶青年精确匹配测试",
+    "order_format": "text",
+    "stores": [
+      {
+        "store_name": "制茶青年-河北廊坊狮子城店",
+        "ground_truth_store_code": "KH2026051100044",
+        "ground_truth_owner_code": "HZ2023061500002",
+        "ground_truth_warehouse_code": "",
+        "items": [
+          {
+            "seq": 1,
+            "product_name": "三孔吸管",
+            "spec": "包",
+            "quantity": 1,
+            "unit": "包",
+            "ground_truth_sku_code": "SK240826000017",
+            "ground_truth_sku_name": "三孔吸管",
+            "ground_truth_unit": "包",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 2,
+            "product_name": "东方茉莉专用纸杯",
+            "spec": "只",
+            "quantity": 1,
+            "unit": "只",
+            "ground_truth_sku_code": "SK240726000029",
+            "ground_truth_sku_name": "东方茉莉专用纸杯",
+            "ground_truth_unit": "只",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 3,
+            "product_name": "丝滑酸奶",
+            "spec": "1kg",
+            "quantity": 1,
+            "unit": "盒",
+            "ground_truth_sku_code": "OSWL2023070300001",
+            "ground_truth_sku_name": "丝滑酸奶",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 4,
+            "product_name": "冰淇淋脆筒",
+            "spec": "20支",
+            "quantity": 1,
+            "unit": "条",
+            "ground_truth_sku_code": "OSWL2023070100003",
+            "ground_truth_sku_name": "冰淇淋脆筒",
+            "ground_truth_unit": "条",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 5,
+            "product_name": "冷冻草莓浆",
+            "spec": "瓶",
+            "quantity": 1,
+            "unit": "瓶",
+            "ground_truth_sku_code": "SK260326000030",
+            "ground_truth_sku_name": "冷冻草莓浆",
+            "ground_truth_unit": "瓶",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 6,
+            "product_name": "冷冻蜜瓜浆",
+            "spec": "瓶",
+            "quantity": 1,
+            "unit": "瓶",
+            "ground_truth_sku_code": "SK260326000032",
+            "ground_truth_sku_name": "冷冻蜜瓜浆",
+            "ground_truth_unit": "瓶",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 7,
+            "product_name": "凤梨味果酱",
+            "spec": "2kg",
+            "quantity": 1,
+            "unit": "瓶",
+            "ground_truth_sku_code": "OSWL2023070100007",
+            "ground_truth_sku_name": "凤梨味果酱",
+            "ground_truth_unit": "瓶",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 8,
+            "product_name": "制茶基底乳",
+            "spec": "1L/盒",
+            "quantity": 1,
+            "unit": "盒",
+            "ground_truth_sku_code": "SK251013000194",
+            "ground_truth_sku_name": "制茶基底乳",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 9,
+            "product_name": "制茶素毛肚（零食）",
+            "spec": "袋",
+            "quantity": 1,
+            "unit": "袋",
+            "ground_truth_sku_code": "SK241202000103",
+            "ground_truth_sku_name": "制茶素毛肚（零食）",
+            "ground_truth_unit": "袋",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 10,
+            "product_name": "制茶青年双杯袋",
+            "spec": "个",
+            "quantity": 1,
+            "unit": "个",
+            "ground_truth_sku_code": "SK230709000017",
+            "ground_truth_sku_name": "制茶青年双杯袋",
+            "ground_truth_unit": "个",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 11,
+            "product_name": "制茶青年奶茶专用粉",
+            "spec": "2.5kg/袋",
+            "quantity": 1,
+            "unit": "袋",
+            "ground_truth_sku_code": "SK230811000138",
+            "ground_truth_sku_name": "制茶青年奶茶专用粉",
+            "ground_truth_unit": "袋",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 12,
+            "product_name": "制茶青年桂花乌龙茶",
+            "spec": "包",
+            "quantity": 1,
+            "unit": "包",
+            "ground_truth_sku_code": "SK240920000266",
+            "ground_truth_sku_name": "制茶青年桂花乌龙茶",
+            "ground_truth_unit": "包",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 13,
+            "product_name": "制茶青年桃肉",
+            "spec": "1.2kg",
+            "quantity": 1,
+            "unit": "瓶",
+            "ground_truth_sku_code": "OSWL2023070400042",
+            "ground_truth_sku_name": "制茶青年桃肉",
+            "ground_truth_unit": "瓶",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 14,
+            "product_name": "制茶青年珍宝杯",
+            "spec": "50个",
+            "quantity": 1,
+            "unit": "条",
+            "ground_truth_sku_code": "OSWL2023062700007",
+            "ground_truth_sku_name": "制茶青年珍宝杯",
+            "ground_truth_unit": "条",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 15,
+            "product_name": "制茶青年甄选纯牛奶",
+            "spec": "盒",
+            "quantity": 1,
+            "unit": "盒",
+            "ground_truth_sku_code": "SK250226000139",
+            "ground_truth_sku_name": "制茶青年甄选纯牛奶",
+            "ground_truth_unit": "盒",
+            "ground_truth_unit_type": "小单位"
+          }
+        ]
+      }
+    ]
+  }
+]

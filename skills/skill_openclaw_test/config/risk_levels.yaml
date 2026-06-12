@@ -1,0 +1,188 @@
+# risk_levels.yaml - 自动化测评风险分级规则
+
+high_risk:
+  description: "高风险修改，必须人工确认后才能修复"
+  rules:
+    - type: schema_change
+      patterns:
+        - "CREATE TABLE"
+        - "ALTER TABLE"
+        - "DROP TABLE"
+        - "ADD COLUMN"
+        - "DROP COLUMN"
+        - "RENAME COLUMN"
+      severity: critical
+
+    - type: algorithm_change
+      files:
+        - "tools/sku_mapper.py"
+        - "tools/store_matcher.py"
+      patterns:
+        - "def match_store"
+        - "def map_sku"
+        - "def _match_single"
+        - "Layer 0"
+        - "Layer 1"
+        - "Layer 2"
+        - "Layer 3"
+        - "confidence ="
+        - "if.*>= 0"
+        - "similarity"
+        - "SequenceMatcher"
+      severity: critical
+
+    - type: db_config_change
+      patterns:
+        - "psycopg2.connect"
+        - "DB_HOST"
+        - "DB_PASSWORD"
+        - "DB_PORT"
+        - "DB_NAME"
+      severity: critical
+
+    - type: api_signature_change
+      severity: high
+
+    - type: deletion
+      severity: high
+
+ordinary_risk:
+  description: "普通风险，可自动修复"
+  rules:
+    - type: field_addition
+      patterns:
+        - "original_product_name"
+        - "match_layer"
+        - "seq"
+        - "_warnings"
+        - "trace_id"
+      severity: low
+      fixable: true
+
+    - type: error_message_improvement
+      patterns:
+        - "error_message"
+        - "ERROR_CODES"
+        - "get_friendly_error"
+        - "wrap_error"
+      severity: low
+      fixable: true
+
+    - type: logging_improvement
+      patterns:
+        - "logger"
+        - "logging"
+        - "sys.stdout"
+      severity: low
+      fixable: true
+
+    - type: type_annotation
+      patterns:
+        - ": str"
+        - ": int"
+        - ": float"
+        - ": List"
+        - ": Dict"
+        - ": Optional"
+        - ": Any"
+      severity: low
+      fixable: true
+
+    - type: code_style
+      severity: low
+      fixable: true
+
+    - type: helper_function
+      patterns:
+        - "def _clean"
+        - "def _extract"
+        - "def _format"
+        - "def _build"
+      severity: low
+      fixable: true
+
+    - type: config_change
+      patterns:
+        - "HUADING_FIELDS"
+        - "DEFAULT_VALUES"
+        - "FIELD_ALIAS_MAPPING"
+      severity: medium
+      fixable: true
+
+forbidden:
+  description: "禁止自动修复，必须人工处理"
+  rules:
+    - type: security_sensitive
+      patterns:
+        - "password"
+        - "secret"
+        - "token"
+        - "api_key"
+        - "credential"
+      severity: critical
+      auto_fix: false
+
+    - type: network_request
+      patterns:
+        - "requests."
+        - "urllib"
+        - "http.client"
+        - "boto3"
+      severity: high
+      auto_fix: false
+
+    - type: data_deletion
+      patterns:
+        - "DELETE FROM"
+        - "DROP TABLE"
+        - "TRUNCATE"
+        - "rm "
+        - "os.remove"
+      severity: critical
+      auto_fix: false
+
+    - type: dependency_change
+      patterns:
+        - "requirements.txt"
+        - "package.json"
+      severity: high
+      auto_fix: false
+
+fix_whitelist:
+  description: "明确允许自动修复的修改类型"
+  permitted_fixes:
+    - id: "F001"
+      name: "增加 original_product_name 字段"
+      file: "tools/sku_mapper.py"
+      change: "_build_result 增加 original_product_name 参数"
+      risk_level: ordinary
+
+    - id: "F002"
+      name: "补全 match_method 字段"
+      file: "tools/sku_mapper.py"
+      change: "各匹配层增加 match_method 描述"
+      risk_level: ordinary
+
+    - id: "F003"
+      name: "错误码补全"
+      file: "__init__.py"
+      change: "ERROR_CODES 增加新错误码"
+      risk_level: ordinary
+
+    - id: "F004"
+      name: "日志增强"
+      file: "*.py"
+      change: "关键步骤增加日志输出"
+      risk_level: ordinary
+
+severity_levels:
+  critical: "立即停止自动化，需人工介入"
+  high: "必须人工确认后修复"
+  medium: "可自动修复，但需要复测验证"
+  low: "可自动修复，无需额外确认"
+
+post_fix_validation:
+  require_retest: true
+  require_diff_check: true
+  require_syntax_check: true
+  require_import_check: true

@@ -1,0 +1,19 @@
+db:
+  host: localhost
+  port: 5432
+  database: neo
+  user: jinqianfei
+  # password: 填写你的数据库密码
+
+test:
+  min_confidence_high: 0.8
+  min_confidence_medium: 0.7
+  confidence_threshold_warn: 0.8
+  output_dir: ../docs/test_data
+
+skill:
+  # skill 代码路径（相对或绝对路径）
+  skill_path: ../skill_order_to_huading_template
+  versions:
+    old: v5.4
+    new: v5.5

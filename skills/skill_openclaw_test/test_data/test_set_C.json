@@ -1,0 +1,182 @@
+[
+  {
+    "test_id": "chuangyu_fuzzy_match",
+    "order_file": "创宇模糊匹配测试",
+    "order_format": "text",
+    "stores": [
+      {
+        "store_name": "盐城市创宇食品有限公司",
+        "ground_truth_store_code": "KH2026050600449",
+        "ground_truth_owner_code": "HZ2024061300001",
+        "ground_truth_warehouse_code": "",
+        "items": [
+          {
+            "seq": 1,
+            "product_name": "一号私厨战斧牛排",
+            "spec": "2.5kg/包",
+            "quantity": 1,
+            "unit": "包",
+            "ground_truth_sku_code": "SK250829000109",
+            "ground_truth_sku_name": "一号私厨战斧牛排",
+            "ground_truth_unit": "包",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 2,
+            "product_name": "一号私厨打包盒",
+            "spec": "箱",
+            "quantity": 1,
+            "unit": "箱",
+            "ground_truth_sku_code": "SK250829000113",
+            "ground_truth_sku_name": "一号私厨打包盒",
+            "ground_truth_unit": "箱",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 3,
+            "product_name": "一号私厨日配大托盘（战斧盒子）",
+            "spec": "件",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK250910000057",
+            "ground_truth_sku_name": "一号私厨日配大托盘（战斧盒子）",
+            "ground_truth_unit": "件",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 4,
+            "product_name": "一号私厨日配小托盘（羊排盒子）",
+            "spec": "件",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK250910000056",
+            "ground_truth_sku_name": "一号私厨日配小托盘（羊排盒子）",
+            "ground_truth_unit": "件",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 5,
+            "product_name": "一号私厨法式羊排",
+            "spec": "2.5kg/包",
+            "quantity": 1,
+            "unit": "包",
+            "ground_truth_sku_code": "SK250829000111",
+            "ground_truth_sku_name": "一号私厨法式羊排",
+            "ground_truth_unit": "包",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 6,
+            "product_name": "一号私厨牛排撒料",
+            "spec": "箱",
+            "quantity": 1,
+            "unit": "箱",
+            "ground_truth_sku_code": "SK250829000114",
+            "ground_truth_sku_name": "一号私厨牛排撒料",
+            "ground_truth_unit": "箱",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 7,
+            "product_name": "一号私厨黑胡椒碎",
+            "spec": "500g/包",
+            "quantity": 1,
+            "unit": "包",
+            "ground_truth_sku_code": "SK250910000050",
+            "ground_truth_sku_name": "一号私厨黑胡椒碎",
+            "ground_truth_unit": "包",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 8,
+            "product_name": "九升鹌鹑蛋",
+            "spec": "包",
+            "quantity": 1,
+            "unit": "包",
+            "ground_truth_sku_code": "SK260314000011",
+            "ground_truth_sku_name": "九升鹌鹑蛋",
+            "ground_truth_unit": "包",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 9,
+            "product_name": "亲热椒麻小酥肉",
+            "spec": "1kg/袋",
+            "quantity": 1,
+            "unit": "袋",
+            "ground_truth_sku_code": "SK250423000071",
+            "ground_truth_sku_name": "亲热椒麻小酥肉",
+            "ground_truth_unit": "袋",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 10,
+            "product_name": "亿康清源相间小肥羊卷（原切）",
+            "spec": "2.5kg/包",
+            "quantity": 1,
+            "unit": "包",
+            "ground_truth_sku_code": "SK240927000031",
+            "ground_truth_sku_name": "亿康清源相间小肥羊卷（原切）",
+            "ground_truth_unit": "包",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 11,
+            "product_name": "伊比利亚黑猪五花肉",
+            "spec": "件",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK241204000066",
+            "ground_truth_sku_name": "伊比利亚黑猪五花肉",
+            "ground_truth_unit": "件",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 12,
+            "product_name": "伊比利亚黑猪背排",
+            "spec": "件",
+            "quantity": 1,
+            "unit": "件",
+            "ground_truth_sku_code": "SK241204000065",
+            "ground_truth_sku_name": "伊比利亚黑猪背排",
+            "ground_truth_unit": "件",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 13,
+            "product_name": "众享汇调味法式羊排",
+            "spec": "2.5kg/袋",
+            "quantity": 1,
+            "unit": "袋",
+            "ground_truth_sku_code": "SK250923000370",
+            "ground_truth_sku_name": "众享汇调味法式羊排",
+            "ground_truth_unit": "袋",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 14,
+            "product_name": "佰富羔羊肉卷",
+            "spec": "包",
+            "quantity": 1,
+            "unit": "包",
+            "ground_truth_sku_code": "SK240621000036",
+            "ground_truth_sku_name": "佰富羔羊肉卷",
+            "ground_truth_unit": "包",
+            "ground_truth_unit_type": "小单位"
+          },
+          {
+            "seq": 15,
+            "product_name": "佰富羔羊肩肉板",
+            "spec": "2.5kg/包",
+            "quantity": 1,
+            "unit": "包",
+            "ground_truth_sku_code": "SK240717000009",
+            "ground_truth_sku_name": "佰富羔羊肩肉板",
+            "ground_truth_unit": "包",
+            "ground_truth_unit_type": "小单位"
+          }
+        ]
+      }
+    ]
+  }
+]
