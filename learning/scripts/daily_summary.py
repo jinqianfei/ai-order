@@ -108,6 +108,18 @@ def daily_alias_summary():
             f.write(md)
 
         print(f"别名表汇总已写入: {output_path}")
+
+        # 有建议时自动发送飞书通知
+        if rows:
+            try:
+                _script_dir = os.path.dirname(os.path.abspath(__file__))
+                if _script_dir not in sys.path:
+                    sys.path.insert(0, _script_dir)
+                from notification_sender import send_notification
+                send_notification("alias_expansion", md)
+            except Exception as e:
+                print(f"[WARN] notification send failed: {e}")
+
         return output_path
 
     except Exception as e:

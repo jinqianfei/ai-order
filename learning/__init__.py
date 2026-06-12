@@ -7,6 +7,7 @@ learning/ — 自学习模块（独立于 Skill）
 - adapter — 事件 payload → DB record 转换
 - feedback_parser — 解析用户反馈（从 __init__.py 提取）
 - modifier — 应用修改到映射结果（从 __init__.py 提取）
+- improver — 改进执行器：高频纠正 → 别名候选 → 审批通知 → 写入 yaml
 """
 
 __version__ = "1.0.0"

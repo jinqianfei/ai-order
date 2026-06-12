@@ -135,6 +135,33 @@ echo "  📄 内容预览："
 sed 's/^/    /' "$REPORT_FILE" | head -40
 echo ""
 
+# ── 2.5 自学习分析 + 改进建议 ──
+echo "▶ Step 2.5: 自学习分析"
+
+# 运行分析脚本（生成 /tmp/analysis_report_*.md）
+ANALYSIS_OUTPUT=$(cd "$WORKSPACE" && python3 "$WORKSPACE/learning/scripts/analyze_data.py" 2>&1) || true
+echo "$ANALYSIS_OUTPUT" | sed 's/^/  /'
+
+# 运行改进执行器（通知 + 可选自动应用）
+IMPROVER_OUTPUT=$(cd "$WORKSPACE" && python3 -c "
+import sys
+sys.path.insert(0, '.')
+from learning.improver import run_improvement_cycle
+run_improvement_cycle(auto_apply=False)
+" 2>&1) || true
+echo "$IMPROVER_OUTPUT" | sed 's/^/  /'
+
+# 将分析结果追加到日结报告
+ANALYSIS_REPORT=$(ls -t /tmp/analysis_report_*.md 2>/dev/null | head -1)
+if [ -n "$ANALYSIS_REPORT" ] && [ -f "$ANALYSIS_REPORT" ]; then
+    echo "" >> "$REPORT_FILE"
+    echo "---" >> "$REPORT_FILE"
+    echo "" >> "$REPORT_FILE"
+    cat "$ANALYSIS_REPORT" >> "$REPORT_FILE"
+    echo "  ✅ 分析报告已追加到日结报告"
+fi
+echo ""
+
 # ── 3. 发飞书 ──
 if [ "$SEND_FEISHU" = true ]; then
   echo "▶ Step 3: 飞书日结推送"

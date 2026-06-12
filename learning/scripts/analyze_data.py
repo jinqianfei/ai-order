@@ -213,6 +213,19 @@ def generate_report():
         f.write(report)
 
     print(f"分析报告已写入: {output_path}")
+
+    # 有实质内容时自动发送飞书通知
+    has_content = alias_candidates or layer_stats or threshold_suggestions
+    if has_content:
+        try:
+            _script_dir = os.path.dirname(os.path.abspath(__file__))
+            if _script_dir not in sys.path:
+                sys.path.insert(0, _script_dir)
+            from notification_sender import send_notification
+            send_notification("threshold_tuning", report)
+        except Exception as e:
+            print(f"[WARN] notification send failed: {e}")
+
     return output_path
 
 
