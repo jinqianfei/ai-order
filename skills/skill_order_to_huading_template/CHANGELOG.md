@@ -1,3 +1,19 @@
+## [5.16.1] - 2026-06-14
+
+### Added — 匹配阈值配置化 + 自动调优
+- **threshold_config.yaml**：新建阈值配置文件（SKU 13 项 + 门店 8 项 + 调优参数 7 项）
+- **calculate_optimal_threshold()**：基于 layer_success_rate 历史数据计算最优阈值（含升/降方向和置信度）
+- **apply_threshold_changes()**：将阈值建议自动写入 threshold_config.yaml
+- **generate_threshold_suggestions() v2**：区分 SKU/门店，输出具体建议值（当前值→建议值）+ 原因 + 置信度
+- **_sku_mapper.py 配置化**：26 处硬编码阈值替换为 `_t(key, default)` 调用，从 threshold_config.yaml 读取
+- **_store_matcher.py 配置化**：13 处硬编码阈值替换为 `_st(key, default)` 调用，从 threshold_config.yaml 读取
+- **报告增强**：阈值调优建议改为表格（类型/层/纠正率/当前值/建议值/方向/置信度/风险）
+- **闭环集成**：improver.py auto_apply 模式下，阈值变更在 CI 通过后自动写入配置文件
+
+### CI
+- 53/53 SKU 回归测试通过（阈值配置化无回归）
+- 阈值配置加载验证通过（SKU 13 项 + 门店 8 项）
+
 ## [5.16.0] - 2026-06-14
 
 ### Added — 自学习闭环系统 v2.0
