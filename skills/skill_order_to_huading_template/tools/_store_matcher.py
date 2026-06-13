@@ -12,6 +12,32 @@ from difflib import SequenceMatcher
 import re
 
 
+# ── 阈值配置加载（自学习自动维护）──
+_THRESHOLD_CFG = {}
+try:
+    import yaml as _yaml
+    import os as _os
+    _ws = _os.environ.get("AI_ORDER_WORKSPACE", "")
+    if not _ws:
+        _p = _os.path.dirname(_os.path.abspath(__file__))
+        for _ in range(6):
+            _p = _os.path.dirname(_p)
+            if _os.path.isdir(_os.path.join(_p, "learning", "config")):
+                _ws = _p
+                break
+    _tc_path = _os.path.join(_ws, "learning", "config", "threshold_config.yaml") if _ws else ""
+    if _tc_path and _os.path.exists(_tc_path):
+        with open(_tc_path, "r", encoding="utf-8") as _f:
+            _THRESHOLD_CFG = (_yaml.safe_load(_f) or {}).get("store_matcher", {})
+except Exception:
+    pass
+
+
+def _st(key: str, default: float) -> float:
+    """读取门店匹配阈值配置，带 fallback"""
+    return _THRESHOLD_CFG.get(key, default)
+
+
 def _strip_brand_prefix(store_name: str) -> str:
     """去除品牌前缀，提取门店具体名称部分"""
     # 常见品牌前缀（从实际数据中提取）
@@ -106,7 +132,7 @@ def _keyword_cross_match(store_name: str, db_config: Optional[dict]) -> Optional
     
     scored.sort(key=lambda x: x[0], reverse=True)
     
-    if scored and scored[0][0] >= 0.35:
+    if scored and scored[0][0] >= _st("layer4_floor", 0.35):
         best = scored[0][2]
         coverage = scored[0][1]
         return {
@@ -171,7 +197,7 @@ def match_store(store_name: str, customer_company: str = None,
                 for s in stores:
                     # 先完整名称相似度
                     sim = SequenceMatcher(None, store_name, s["store_name"]).ratio()
-                    if sim < 0.6:
+                    if sim < _st("layer0_phone_medium", 0.6):
                         # 不够则去品牌前缀再算
                         sim2 = SequenceMatcher(
                             None,
@@ -183,22 +209,22 @@ def match_store(store_name: str, customer_company: str = None,
                 scored.sort(key=lambda x: x[0], reverse=True)
                 best_sim, best_store = scored[0]
 
-                if best_sim >= 0.8:
+                if best_sim >= _st("layer0_phone_high", 0.8):
                     return _build_store_result(best_store, "phone_exact_high_conf",
                                                f"手机号+门店名双重匹配（{phone}，{best_sim:.0%}）", db_config)
-                elif best_sim >= 0.6:
+                elif best_sim >= _st("layer0_phone_medium", 0.6):
                     result = _build_store_result(best_store, "phone_exact_multi",
                                                  f"手机号匹配+门店名待确认（{phone}，{best_sim:.0%}）", db_config)
                     result["need_confirm"] = True
                     result["candidates"] = [_build_store_result(s, "phone_exact_multi",
                                                  f"{phone}，{sim:.0%}", db_config)
-                                            for sim, s in scored if sim >= 0.5]
+                                            for sim, s in scored if sim >= _st("layer3_candidates_min", 0.5)]
                     return result
                 # else: 全部 < 0.6，不信任手机号，继续往下
             else:
                 # 唯一命中 → 也要做门店名校验
                 sim = SequenceMatcher(None, store_name, phone_result["store_name"]).ratio()
-                if sim < 0.6:
+                if sim < _st("layer0_phone_medium", 0.6):
                     sim2 = SequenceMatcher(
                         None,
                         _strip_brand_prefix(store_name),
@@ -206,10 +232,10 @@ def match_store(store_name: str, customer_company: str = None,
                     ).ratio()
                     sim = max(sim, sim2)
 
-                if sim >= 0.8:
+                if sim >= _st("layer0_phone_high", 0.8):
                     return _build_store_result(phone_result, "phone_exact_high_conf",
                                                f"手机号+门店名双重匹配（{phone}，{sim:.0%}）", db_config)
-                elif sim >= 0.6:
+                elif sim >= _st("layer0_phone_medium", 0.6):
                     result = _build_store_result(phone_result, "phone_exact",
                                                  f"手机号匹配+门店名待确认（{phone}，{sim:.0%}）", db_config)
                     result["need_confirm"] = True
@@ -276,12 +302,12 @@ def match_store(store_name: str, customer_company: str = None,
     scored = []
     for store in fuzzy_matches:
         ratio = SequenceMatcher(None, store_name, store["store_name"]).ratio()
-        if ratio >= 0.5:
+        if ratio >= _st("layer3_candidates_min", 0.5):
             scored.append((ratio, store))
 
     scored.sort(key=lambda x: x[0], reverse=True)
 
-    if scored and scored[0][0] >= 0.75:
+    if scored and scored[0][0] >= _st("layer3_fuzzy", 0.75):
         best = scored[0][1]
         return _build_store_result(best, "fuzzy_similar",
                                    f"模糊匹配（相似度{scored[0][0]:.0%}）: '{store_name}'→'{best['store_name']}'", db_config)
@@ -323,7 +349,7 @@ def match_store(store_name: str, customer_company: str = None,
                         scored.append((sim, s))
                     scored.sort(key=lambda x: x[0], reverse=True)
                     best_sim, best_store = scored[0]
-                    if best_sim >= 0.8:
+                    if best_sim >= _st("layer0_phone_high", 0.8):
                         return _build_store_result(best_store, "phone_exact_high_conf",
                                                    f"手机号+门店名双重匹配（{phone}，contact_person兜底，{best_sim:.0%}）", db_config)
                     else:
@@ -332,7 +358,7 @@ def match_store(store_name: str, customer_company: str = None,
                         result["need_confirm"] = True
                         result["candidates"] = [_build_store_result(s, "phone_exact_multi",
                                                      f"{phone}，{sim:.0%}", db_config)
-                                                for sim, s in scored if sim >= 0.5]
+                                                for sim, s in scored if sim >= _st("layer3_candidates_min", 0.5)]
                         return result
                 else:
                     return _build_store_result(by_phone, "phone_exact",
@@ -421,7 +447,7 @@ def _match_by_order_info(phone: str, address: str, contact_person: str,
             scored = [(SequenceMatcher(None, contact_person, s["store_name"]).ratio(), s)
                       for s in stores]
             scored.sort(key=lambda x: x[0], reverse=True)
-            if scored and scored[0][0] >= 0.6:
+            if scored and scored[0][0] >= _st("layer0_phone_medium", 0.6):
                 return _build_store_result(scored[0][1], "contact_person",
                                            f"收货人姓名匹配（'{contact_person}'→'{scored[0][1]['store_name']}'）", db_config)
 

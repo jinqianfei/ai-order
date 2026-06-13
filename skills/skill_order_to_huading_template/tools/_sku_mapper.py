@@ -32,6 +32,30 @@ try:
 except ImportError:
     yaml = None
 
+# ── 阈值配置加载（自学习自动维护）──
+_THRESHOLD_CFG = {}
+try:
+    import yaml as _yaml
+    import os as _os
+    _ws = _os.environ.get("AI_ORDER_WORKSPACE", "")
+    if not _ws:
+        _p = _os.path.dirname(_os.path.abspath(__file__))
+        for _ in range(6):
+            _p = _os.path.dirname(_p)
+            if _os.path.isdir(_os.path.join(_p, "learning", "config")):
+                _ws = _p
+                break
+    _tc_path = _os.path.join(_ws, "learning", "config", "threshold_config.yaml") if _ws else ""
+    if _tc_path and _os.path.exists(_tc_path):
+        with open(_tc_path, "r", encoding="utf-8") as _f:
+            _THRESHOLD_CFG = (_yaml.safe_load(_f) or {}).get("sku_matcher", {})
+except Exception:
+    pass
+
+def _t(key: str, default: float) -> float:
+    """读取阈值配置，带 fallback"""
+    return _THRESHOLD_CFG.get(key, default)
+
 
 def _load_yaml_sku_aliases(owner_code: str) -> Dict[str, str]:
     """
@@ -207,9 +231,9 @@ def _keyword_boost(clean_name: str, sku_name: str) -> float:
     - 数据库sku_name 是 清洗后的订单商品名的子串 → 加成0.10
     """
     if clean_name in sku_name:
-        return 0.25  # 订单商品名被数据库名称包含,强匹配
+        return _t("keyword_boost_strong", 0.25)  # 订单商品名被数据库名称包含,强匹配
     if sku_name in clean_name:
-        return 0.10  # 数据库名称是订单商品名的子串
+        return _t("keyword_boost_weak", 0.10)  # 数据库名称是订单商品名的子串
     return 0.0
 
 
@@ -325,11 +349,11 @@ def _compute_match_score(name_score: float, spec_score: float, keyword_boost: fl
 
     # 🆕 单位命中加成 (所有层通用, v5.14.0)
     if order_unit and sku_unit and order_unit == sku_unit:
-        ts += 0.20
+        ts += _t("unit_bonus", 0.20)
 
     # 🆕 规格精确命中加成
     if order_spec and db_spec and order_spec == db_spec:
-        ts += 0.10
+        ts += _t("spec_bonus", 0.10)
 
     return min(1.0, ts)
 
@@ -578,7 +602,7 @@ def _map_sku_legacy(owner_code: str, product_name: str, unit: str = "",
                 scored.append((total_score, name_score, spec_score, r))
             scored.sort(key=lambda x: x[0], reverse=True)
             total_score, name_score, spec_score, best = scored[0]
-            if total_score >= 0.8:
+            if total_score >= _t("layer2_fuzzy_direct", 0.8):
                 conn.close()
                 result = _build_result(best, confidence=round(total_score, 2), original_product_name=product_name)
                 result["match_method"] = f"Layer 2 模糊匹配+规格校验(名称{int(name_score*100)}%+规格{int(spec_score*100)}%)"
@@ -610,7 +634,7 @@ def _map_sku_legacy(owner_code: str, product_name: str, unit: str = "",
 
             # 高相似度时额外加权:当名称相似度>=0.7时,boost=0.25
             keyword_boost = _keyword_boost(clean_name, sku_name)
-            if name_score >= 0.7:
+            if name_score >= _t("layer2_fuzzy_confirm", 0.7):
                 keyword_boost = max(keyword_boost, 0.25)
 
             # 综合分数 = 名称 * 0.5 + 规格 * 0.3 + 加成 * 0.2
@@ -619,11 +643,11 @@ def _map_sku_legacy(owner_code: str, product_name: str, unit: str = "",
         scored.sort(key=lambda x: x[0], reverse=True)
         if scored:
             total_score, name_score, spec_score, keyword_boost, best = scored[0]
-            if total_score >= 0.7:
+            if total_score >= _t("layer2_fuzzy_confirm", 0.7):
                 conn.close()
-                result = _build_result(best, confidence=min(0.85, round(total_score, 2)), original_product_name=product_name)
+                result = _build_result(best, confidence=min(_t("confidence_cap_fuzzy", 0.85), round(total_score, 2)), original_product_name=product_name)
                 result["match_method"] = f"Layer 2.5 相似度匹配(名称{int(name_score*100)}%+规格{int(spec_score*100)}%+加成{int(keyword_boost*100)}%)"
-                result["need_confirm"] = total_score < 0.8
+                result["need_confirm"] = total_score < _t("layer2_fuzzy_direct", 0.8)
                 return result
 
     # ========== Layer 3: 分词关键词匹配 ==========
@@ -653,26 +677,26 @@ def _map_sku_legacy(owner_code: str, product_name: str, unit: str = "",
         total_score, name_score, spec_score, keyword_boost, best = all_matches[0]
 
         # Fallback:当分数略低(0.55-0.6)但名称相似度>=0.7时,加boost后允许通过
-        if 0.55 <= total_score < 0.6 and name_score >= 0.7:
+        if _t("fallback_min", 0.55) <= total_score < 0.6 and name_score >= _t("fallback_name_score_min", 0.7):
             keyword_boost = max(keyword_boost, 0.2)
-            total_score = min(0.79, total_score + keyword_boost)
+            total_score = min(_t("confidence_cap_fallback", 0.79), total_score + keyword_boost)
 
-        if total_score >= 0.8:
+        if total_score >= _t("layer2_fuzzy_direct", 0.8):
             conn.close()
-            result = _build_result(best, confidence=min(0.88, round(total_score, 2)), original_product_name=product_name)
+            result = _build_result(best, confidence=min(_t("confidence_cap_keyword", 0.88), round(total_score, 2)), original_product_name=product_name)
             result["match_method"] = f"Layer 3 分词匹配(名称{int(name_score*100)}%+规格{int(spec_score*100)}%+加成{int(keyword_boost*100)}%)"
             result["need_confirm"] = False
             return result
         elif total_score >= 0.6:
             conn.close()
-            result = _build_result(best, confidence=min(0.88, round(total_score, 2)), original_product_name=product_name)
+            result = _build_result(best, confidence=min(_t("confidence_cap_keyword", 0.88), round(total_score, 2)), original_product_name=product_name)
             result["match_method"] = f"Layer 3 分词匹配(置信度低,需确认)名称{int(name_score*100)}%+规格{int(spec_score*100)}%+加成{int(keyword_boost*100)}%)"
             result["need_confirm"] = True
             return result
-        elif 0.55 <= total_score < 0.6 and name_score >= 0.7:
+        elif _t("fallback_min", 0.55) <= total_score < 0.6 and name_score >= _t("fallback_name_score_min", 0.7):
             # Fallback:分数在0.55-0.6之间,名称相似度>=0.7时,加boost后允许通过
             conn.close()
-            result = _build_result(best, confidence=min(0.79, round(total_score + 0.2, 2)), original_product_name=product_name)
+            result = _build_result(best, confidence=min(_t("confidence_cap_fallback", 0.79), round(total_score + 0.2, 2)), original_product_name=product_name)
             result["match_method"] = f"Layer 3 分词匹配(Fallback加成)名称{int(name_score*100)}%+加成20%)"
             result["need_confirm"] = True
             return result
@@ -1039,14 +1063,14 @@ def _map_single_in_batch(owner_code, product_name, spec, unit, quantity,
             if need_confirm:
                 if ts >= 0.7 or ns >= 0.7 or (ts >= 0.4 and ns >= 0.6):
                     return _build_with_candidates(
-                        tied_rows, confidence=min(0.85, round(ts, 2)),
+                        tied_rows, confidence=min(_t("confidence_cap_fuzzy", 0.85), round(ts, 2)),
                         original_product_name=product_name,
                         match_method=f"Layer 2.5 相似度匹配 (多候选并列)")
                 # 阈值不够，继续找下一层
             elif ts >= 0.7:
-                result = _build_result(best_row, confidence=min(0.85, round(ts, 2)), original_product_name=product_name)
+                result = _build_result(best_row, confidence=min(_t("confidence_cap_fuzzy", 0.85), round(ts, 2)), original_product_name=product_name)
                 result["match_method"] = f"Layer 2.5 相似度匹配(名称{int(ns*100)}%+规格{int(ss*100)}%+加成{int(kb*100)}%+单位加成)"
-                result["need_confirm"] = ts < 0.8
+                result["need_confirm"] = ts < _t("layer2_fuzzy_direct", 0.8)
                 return result
 
     # Layer 3: 分词关键词匹配(内存)（v5.14.0：用新公式）
@@ -1081,27 +1105,27 @@ def _map_single_in_batch(owner_code, product_name, spec, unit, quantity,
         if best_row is not None:
             ts, ns, ss, kb, _ = all_matches[0]
             # Layer 3 Fallback: 0.55-0.6 + name>=0.7 → +0.2 boost
-            if 0.55 <= ts < 0.6 and ns >= 0.7:
+            if _t("fallback_min", 0.55) <= ts < 0.6 and ns >= _t("fallback_name_score_min", 0.7):
                 kb = max(kb, 0.2)
-                ts = min(0.79, ts + kb * 0.0)  # 公式已含 kb, 这里只补一点
+                ts = min(_t("confidence_cap_fallback", 0.79), ts + kb * 0.0)  # 公式已含 kb, 这里只补一点
             if need_confirm:
                 if ts >= 0.6 or ns >= 0.7 or (ts >= 0.4 and ns >= 0.6):
                     return _build_with_candidates(
-                        tied_rows, confidence=min(0.88, round(ts, 2)),
+                        tied_rows, confidence=min(_t("confidence_cap_keyword", 0.88), round(ts, 2)),
                         original_product_name=product_name,
                         match_method=f"Layer 3 分词匹配 (多候选并列)")
                 # 阈值不够，继续找下一层
             elif ts >= 0.8:
-                result = _build_result(best_row, confidence=min(0.88, round(ts, 2)), original_product_name=product_name)
+                result = _build_result(best_row, confidence=min(_t("confidence_cap_keyword", 0.88), round(ts, 2)), original_product_name=product_name)
                 result["match_method"] = f"Layer 3 分词匹配(名称{int(ns*100)}%+规格{int(ss*100)}%+加成{int(kb*100)}%+单位加成)"
                 return result
             elif ts >= 0.6:
-                result = _build_result(best_row, confidence=min(0.88, round(ts, 2)), original_product_name=product_name)
+                result = _build_result(best_row, confidence=min(_t("confidence_cap_keyword", 0.88), round(ts, 2)), original_product_name=product_name)
                 result["match_method"] = f"Layer 3 分词匹配(需确认)名称{int(ns*100)}%+规格{int(ss*100)}%+加成{int(kb*100)}%+单位加成)"
                 result["need_confirm"] = True
                 return result
-            elif 0.55 <= ts < 0.6 and ns >= 0.7:
-                result = _build_result(best_row, confidence=min(0.79, round(ts + 0.2, 2)), original_product_name=product_name)
+            elif _t("fallback_min", 0.55) <= ts < 0.6 and ns >= _t("fallback_name_score_min", 0.7):
+                result = _build_result(best_row, confidence=min(_t("confidence_cap_fallback", 0.79), round(ts + 0.2, 2)), original_product_name=product_name)
                 result["match_method"] = f"Layer 3 分词匹配(Fallback加成)名称{int(ns*100)}%+加成20%)"
                 result["need_confirm"] = True
                 return result
