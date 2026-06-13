@@ -563,6 +563,28 @@ def _normalize_ai_result_static(raw_data: Dict, alias_mapping: Dict = None) -> T
         else:
             unknown_fields.append(ai_field_name)
     if unknown_fields:
+        # 新增：emit 事件供自学习模块采集
+        try:
+            import sys, os
+            _ws = os.environ.get("AI_ORDER_WORKSPACE", "")
+            if not _ws:
+                _p = os.path.dirname(os.path.abspath(__file__))
+                for _ in range(6):
+                    _p = os.path.dirname(_p)
+                    if os.path.isdir(os.path.join(_p, "events")):
+                        _ws = _p
+                        break
+            if _ws and _ws not in sys.path:
+                sys.path.insert(0, _ws)
+            from events.bus import EventBus
+            EventBus.emit("unknown_field_detected", {
+                "field_names": unknown_fields,
+                "shipper_id": "",  # 此层还不知道 shipper_id
+                "order_context": {k: str(v)[:200] for k, v in raw_data.items() if k != "raw_text"},
+                "timestamp": __import__("time").time()
+            })
+        except Exception:
+            pass  # 事件发送失败不影响主流程
         warnings.append(f"未知字段名{len(unknown_fields)}个，已忽略: {', '.join(unknown_fields[:5])}")
     return normalized, warnings
 
