@@ -1,3 +1,29 @@
+## [5.16.0] - 2026-06-14
+
+### Added — 自学习闭环系统 v2.0
+- **事件总线扩展**：新增 3 个事件（unknown_field_detected / unmatched_sku_keyword / cleaning_rule_gap），总计 13 个事件
+- **字段别名候选**：parser.py emit unknown_field_detected → collector 写入 unknown_fields_log → analyze_field_alias_candidates() → improver 写入 field_aliases_auto.yaml（补齐采集→分析→写入 3 环）
+- **关键词词库更新**：_sku_mapper.py unmatched 时 emit → keyword_candidates_log → analyze_keyword_candidates() → 建议写入 keywords_config.yaml（配置化，不改 .py）
+- **清洗规则增强**：_sku_mapper.py 清洗缺口时 emit → cleaning_rule_gap_log → analyze_cleaning_rule_candidates() → 建议改正则
+- **CI-before-建议集成**：improver.py v2.0 在推送建议前自动调用 ci_regression.sh + history_replay.py + accuracy_comparison.py，CI 不过则不推送
+- **5 类建议生成**：SKU 别名 / 字段别名 / 阈值调优 / 关键词词库 / 清洗规则
+- **完整报告**：建议内容 + CI 结果 + 回放数据 + 准确率对比 + 迭代决策
+- **迭代决策引擎**：从 skill_operation_monitor/decider.py 迁入 run_iteration_decision()，集成到改进循环
+- **分析脚本 v2.0**：9 个分析函数（原 3 个 + 新增 6 个：字段别名/关键词/清洗/排名/趋势/SKU vs 门店）
+- **关键词配置化**：product_types / flavor_types 从 _sku_mapper.py 硬编码改为 keywords_config.yaml 可配置
+- **清洗规则配置化**：新建 cleaning_config.yaml
+- **daily_wrap.sh 集成**：Step 2.5 调用 v2.0 improver（含 CI 验证）
+- **3 张新 DB 表**：unknown_fields_log / keyword_candidates_log / cleaning_rule_gap_log
+- **5 个新 yaml 配置项**：field_alias_candidates / keyword_candidates / cleaning_rule_candidates / correction_ranking / correction_trend
+
+### Changed
+- 自学习模块方案文档标记修正（Phase 3/4 checklist 对齐实际代码状态）
+
+### CI
+- 53/53 SKU 回归测试通过
+- 4/4 事件管道测试通过
+- 5 个 Python 文件语法验证通过
+
 ## [5.15.4] - 2026-06-12
 
 ### Fixed
