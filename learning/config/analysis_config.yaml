@@ -35,3 +35,30 @@ daily_alias_summary:
 notification:
   # webhook 请求超时（秒）
   webhook_timeout_seconds: 10
+
+# ── 字段别名候选分析（analyze_data.py）──
+field_alias_candidates:
+  lookback_days: 7
+  min_detection_count: 2
+  max_results: 20
+
+# ── 关键词词库候选分析（analyze_data.py）──
+keyword_candidates:
+  lookback_days: 30
+  min_keyword_count: 5
+  max_results: 20
+
+# ── 清洗规则候选分析（analyze_data.py）──
+cleaning_rule_candidates:
+  lookback_days: 30
+  min_gap_count: 3
+  max_results: 20
+
+# ── 纠正排名分析（analyze_data.py）──
+correction_ranking:
+  lookback_days: 30
+  max_results: 20
+
+# ── 纠正趋势分析（analyze_data.py）──
+correction_trend:
+  lookback_days: 14  # 本周 + 上周

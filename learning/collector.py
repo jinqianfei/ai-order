@@ -13,6 +13,7 @@ learn/collector.py — FeedbackCollector（v5.9.0 Phase 1）
 - 订单完成时写入 order_feedback 主表
 - 数据库连接失败不影响主流程（容错）
 """
+import json
 import time
 import os
 from typing import Optional, Dict, Any, List
@@ -60,6 +61,9 @@ class FeedbackCollector:
         EventBus.on("order_cancelled", self.on_order_cancelled)
         EventBus.on("user_modified", self.on_user_modified)
         EventBus.on("alert_raised", self.on_alert_raised)
+        EventBus.on("unknown_field_detected", self.on_unknown_field_detected)
+        EventBus.on("unmatched_sku_keyword", self.on_unmatched_sku_keyword)
+        EventBus.on("cleaning_rule_gap", self.on_cleaning_rule_gap)
 
     # ── 事件处理 ───────────────────────────────────
 
@@ -196,6 +200,83 @@ class FeedbackCollector:
     def on_alert_raised(self, data: Dict):
         """系统告警（暂只打日志，可扩展）"""
         print(f"[FeedbackCollector Alert] {data.get('severity', '?')} — {data.get('message', '')}")
+
+    def on_unknown_field_detected(self, data: Dict):
+        """记录未知字段，供字段别名候选分析"""
+        conn = self._get_conn()
+        if not conn:
+            return
+        try:
+            cur = conn.cursor()
+            field_names = data.get("field_names", [])
+            shipper_id = data.get("shipper_id", "")
+            order_context = data.get("order_context", {})
+            for field_name in field_names:
+                cur.execute("""
+                    INSERT INTO unknown_fields_log (field_name, shipper_id, order_context, detected_at)
+                    VALUES (%s, %s, %s, NOW())
+                """, (field_name, shipper_id, json.dumps(order_context, ensure_ascii=False)))
+            conn.commit()
+            cur.close()
+        except Exception as e:
+            print(f"[collector] unknown_field write failed: {e}", flush=True)
+        finally:
+            try:
+                conn.close()
+            except Exception:
+                pass
+
+    def on_unmatched_sku_keyword(self, data: Dict):
+        """记录未匹配SKU关键词，供关键词词库候选分析"""
+        conn = self._get_conn()
+        if not conn:
+            return
+        try:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO keyword_candidates_log (order_product_name, extracted_keywords, shipper_id, match_layer, detected_at)
+                VALUES (%s, %s, %s, %s, NOW())
+            """, (
+                data.get("order_product_name", ""),
+                data.get("extracted_keywords", ""),
+                data.get("shipper_id", ""),
+                data.get("match_layer", "")
+            ))
+            conn.commit()
+            cur.close()
+        except Exception as e:
+            print(f"[collector] keyword_log write failed: {e}", flush=True)
+        finally:
+            try:
+                conn.close()
+            except Exception:
+                pass
+
+    def on_cleaning_rule_gap(self, data: Dict):
+        """记录清洗规则缺口，供清洗规则候选分析"""
+        conn = self._get_conn()
+        if not conn:
+            return
+        try:
+            cur = conn.cursor()
+            cur.execute("""
+                INSERT INTO cleaning_rule_gap_log (original_name, cleaned_name, shipper_id, match_layer, detected_at)
+                VALUES (%s, %s, %s, %s, NOW())
+            """, (
+                data.get("original_name", ""),
+                data.get("cleaned_name", ""),
+                data.get("shipper_id", ""),
+                data.get("match_layer", "")
+            ))
+            conn.commit()
+            cur.close()
+        except Exception as e:
+            print(f"[collector] cleaning_gap write failed: {e}", flush=True)
+        finally:
+            try:
+                conn.close()
+            except Exception:
+                pass
 
     # ── 数据库写入 ─────────────────────────────────
 

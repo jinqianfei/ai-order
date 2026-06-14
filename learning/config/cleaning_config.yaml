@@ -1,0 +1,26 @@
+# 清洗规则配置（自学习自动维护）
+# 由 improver.py 根据 cleaning_rule_gap_log 表数据更新
+# 当前为初始默认值，与 _sku_mapper.py 中 _clean_product_name 保持一致
+
+# 清洗规则列表（正则表达式）
+rules:
+  # 去除开头/末尾的孤立分隔符
+  - pattern: "[-_./\\\\,;:]+"
+    position: "trailing"
+    description: "去除末尾孤立分隔符"
+  - pattern: "^[-_./\\\\,;:]+"
+    position: "leading"
+    description: "去除开头孤立分隔符"
+
+  # 去除空白
+  - pattern: "\\s+"
+    replacement: ""
+    description: "去除所有空白字符"
+
+# 保留的中间连接符字符
+keep_middle_separators: ["-"]
+
+# 清洗规则缺口检测阈值
+gap_detection:
+  # 清洗后长度 < 原始长度 * 此比例 → 触发 cleaning_rule_gap 事件
+  min_length_ratio: 0.5

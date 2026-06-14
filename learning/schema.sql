@@ -152,3 +152,38 @@ SELECT
     avg_match_score
 FROM layer_success_rate
 ORDER BY entity_type, layer_name;
+
+-- unknown_fields_log：未知字段检测日志（自学习字段别名候选数据源）
+CREATE TABLE IF NOT EXISTS unknown_fields_log (
+    id SERIAL PRIMARY KEY,
+    field_name TEXT NOT NULL,
+    shipper_id TEXT DEFAULT '',
+    order_context JSONB,
+    detected_at TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_unknown_fields_name ON unknown_fields_log(field_name);
+CREATE INDEX IF NOT EXISTS idx_unknown_fields_time ON unknown_fields_log(detected_at DESC);
+
+-- keyword_candidates_log：未匹配关键词日志（自学习关键词词库候选数据源）
+CREATE TABLE IF NOT EXISTS keyword_candidates_log (
+    id SERIAL PRIMARY KEY,
+    order_product_name TEXT NOT NULL,
+    extracted_keywords TEXT,
+    shipper_id TEXT DEFAULT '',
+    match_layer TEXT,
+    detected_at TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_keyword_log_name ON keyword_candidates_log(order_product_name);
+CREATE INDEX IF NOT EXISTS idx_keyword_log_time ON keyword_candidates_log(detected_at DESC);
+
+-- cleaning_rule_gap_log：清洗规则缺口日志（自学习清洗规则候选数据源）
+CREATE TABLE IF NOT EXISTS cleaning_rule_gap_log (
+    id SERIAL PRIMARY KEY,
+    original_name TEXT NOT NULL,
+    cleaned_name TEXT NOT NULL,
+    shipper_id TEXT DEFAULT '',
+    match_layer TEXT,
+    detected_at TIMESTAMP DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_cleaning_log_name ON cleaning_rule_gap_log(original_name);
+CREATE INDEX IF NOT EXISTS idx_cleaning_log_time ON cleaning_rule_gap_log(detected_at DESC);

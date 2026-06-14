@@ -1,0 +1,70 @@
+# 匹配阈值配置（自学习自动维护）
+# 由 improver.py 根据 layer_success_rate / order_corrections 数据自动调优
+# 修改此文件可调整匹配行为，无需改代码
+
+# ── SKU 匹配阈值（_sku_mapper.py）──
+sku_matcher:
+  # Layer 1: 精确匹配
+  layer1_exact: 0.95
+
+  # Layer 2: 模糊匹配
+  layer2_fuzzy_direct: 0.8          # 相似度 ≥ 此值 → 直接返回
+  layer2_fuzzy_confirm: 0.7         # 相似度 ≥ 此值 → 需确认
+
+  # Layer 3: 关键词匹配
+  layer3_keyword: 0.7
+
+  # Fallback
+  fallback_min: 0.55                # 最低允许分数
+  fallback_name_score_min: 0.7      # fallback 要求名称相似度下限
+
+  # 加成系数
+  keyword_boost_strong: 0.25        # 关键词完全匹配 boost
+  keyword_boost_weak: 0.10          # 关键词部分匹配 boost
+  unit_bonus: 0.20                  # 订单单位匹配加成
+  spec_bonus: 0.10                  # 规格匹配加成
+
+  # 置信度上限
+  confidence_cap_fuzzy: 0.85        # Layer 2 置信度上限
+  confidence_cap_keyword: 0.88      # Layer 3 置信度上限
+  confidence_cap_fallback: 0.79     # Fallback 置信度上限
+
+# ── 门店匹配阈值（_store_matcher.py）──
+store_matcher:
+  # Layer 0: 辅助信息
+  layer0_phone_min: 0.35            # 手机号匹配最低分
+
+  # Layer 1: 客户公司匹配
+  layer1_company: 0.8
+
+  # Layer 2: 精确匹配
+  layer2_exact: 0.8
+
+  # Layer 3: 模糊匹配
+  layer3_fuzzy: 0.6
+  layer3_candidates_min: 0.5        # 候选列表最低分
+
+  # Layer 3.5: 关键词交叉
+  layer3_5_keyword: 0.5
+
+  # Layer 4: 兜底
+  layer4_floor: 0.75                # 最终兜底最低分
+  layer4_candidates_min: 0.6
+
+# ── 调优参数 ──
+tuning:
+  # 纠正率超过此值 → 建议降低阈值
+  correction_rate_threshold: 30      # 百分比
+
+  # 成功率超过此值且样本充足 → 可考虑提高阈值（减少误匹配）
+  success_rate_high: 95             # 百分比
+  min_sample_for_increase: 100
+
+  # 单次调整步长
+  step_down: 0.05                   # 降低时每次减 0.05
+  step_up: 0.03                     # 提高时每次加 0.03
+
+  # 阈值下限（不能低于此值）
+  min_threshold: 0.3
+  # 阈值上限
+  max_threshold: 0.99

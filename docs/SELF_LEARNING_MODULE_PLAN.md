@@ -113,11 +113,11 @@ ALTER TABLE order_feedback ADD COLUMN submitted_by VARCHAR;
 | 分析项 | 时间范围 | 触发条件 | 输出 |
 |--------|---------|---------|------|
 | 高频纠正商品 → 别名表候选 | 滚动 7 天 | 同一(商品名,正确名) ≥ 3 次 | INSERT yaml |
-| 未知字段名 → 字段别名候选 | 滚动 7 天 | 同一(字段名,货主) ≥ 2 次 | INSERT yaml |
+| 未知字段名 → 字段别名候选 | 滚动 7 天 | 同一(字段名,货主) ≥ 2 次 | INSERT yaml | ✅ v2.0 已实现
 | 各层成功率 | 累计全量 | 每层 ≥ 50 次尝试 | 发现薄弱层 |
 | 阈值调优建议 | 滚动 30 天 | 某层纠正率 > 30% | 建议调阈值 |
-| 关键词词库更新 | 滚动 30 天 | 新产品类型词反复出现 | 建议加词 |
-| 清洗规则增强 | 滚动 30 天 | 新边界字符反复出现 | 建议改正则 |
+| 关键词词库更新 | 滚动 30 天 | 新产品类型词反复出现 | 建议加词 | ✅ v2.0 已实现
+| 清洗规则增强 | 滚动 30 天 | 新边界字符反复出现 | 建议改正则 | ✅ v2.0 已实现
 
 ### 3.2 每日别名表汇总
 
@@ -381,13 +381,18 @@ Supermemory 内网不通时的替代方案：
 - [x] yaml SKU 别名加载逻辑（_sku_mapper.py _load_yaml_sku_aliases）
 - [x] yaml 字段别名加载逻辑（_field_transformer.py _merge_auto_aliases）
 - [x] Layer 0 多 SKU + order_unit 修复（单条+批量两处）
-- [ ] 阈值调优建议逻辑（等数据积累后做）
-- [ ] 关键词词库更新逻辑（等数据积累后做）
+- [x] 阈值调优建议逻辑（v2.0 已实现，含建议值输出）
+- [x] 关键词词库更新逻辑（v2.0 已实现，含配置化 keywords_config.yaml）
+- [x] 清洗规则增强逻辑（v2.0 已实现，含配置化 cleaning_config.yaml）
+- [x] 字段别名候选分析（v2.0 已实现，含 unknown_fields_log 表）
+- [x] CI-before-建议集成（v2.0 已实现，建议前自动跑 CI + 回放 + 对比）
+- [x] 迭代决策引擎集成（v2.0 已实现，从 skill_operation_monitor 迁入）
 
-### Phase 4：验证层（✅ 已完成）
+### Phase 4：验证层（✅ 已完成 — v2.0 集成到 improver.py 自动调用）
 - [x] CI 回归测试
 - [x] 历史订单回放脚本 `scripts/history_replay.py`（无硬编码路径）
 - [x] 准确率对比报告 `scripts/accuracy_comparison.py`（无硬编码路径）
+- [x] **v2.0 集成**：`improver.py` 在生成建议前自动调用 CI + 回放 + 对比
 
 ### Phase 5：通知机制（✅ 已完成）
 - [x] 通知发送脚本 `scripts/notification_sender.py`（支持飞书/钉钉，无硬编码路径）
