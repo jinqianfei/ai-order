@@ -23,7 +23,7 @@ WORKSPACE="${AI_ORDER_WORKSPACE:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd
 SCRIPTS_DIR="$WORKSPACE/ops"
 MEMORY_DIR="$WORKSPACE/memory"
 MEMORY_MD="$WORKSPACE/MEMORY.md"
-DB_CONFIG_PSQL="psql -h localhost -U jinqianfei -d neo"
+DB_CONFIG_PSQL="psql -h agenthub-db.cjys0msc4x8s.ap-southeast-1.rds.amazonaws.com -p 5432 -U agenthub -d neo"
 
 SEND_FEISHU=true
 TARGET_DATE=$(date -v-1d +%Y-%m-%d 2>/dev/null || date -d "yesterday" +%Y-%m-%d)

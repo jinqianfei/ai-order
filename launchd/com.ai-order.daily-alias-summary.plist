@@ -12,13 +12,13 @@
         <string>/usr/bin/python3 "$AI_ORDER_WORKSPACE/learning/scripts/daily_summary.py"</string>
     </array>
 
-    <!-- 每天 10:00 触发（独立于日报） -->
+    <!-- 每天 10:05 触发（错开 daily-wrap 10:00，避免 DB 竞争） -->
     <key>StartCalendarInterval</key>
     <dict>
         <key>Hour</key>
         <integer>10</integer>
         <key>Minute</key>
-        <integer>0</integer>
+        <integer>5</integer>
     </dict>
 
     <!-- 标准输出/错误 → 日志文件 -->
