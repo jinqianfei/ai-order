@@ -409,6 +409,13 @@ class OrderToHuadingTemplate:
             return {"action": "confirm", "modifications": [], "summary": "用户确认通过"}
         cancel_kw = ["取消", "算了", "不要了"]
         if any(kw in user_message for kw in cancel_kw):
+            # 🔔 EventBus emit: order_cancelled（内置 fallback）
+            if _HAS_EVENT_BUS:
+                try:
+                    EventBus.emit("order_cancelled", {"session_id": getattr(self, '_current_session_id', 'unknown'),
+                        "timestamp": time.time(), "reason": "user_cancel", "user_message": user_message})
+                except Exception:
+                    pass
             return {"action": "cancel", "modifications": [], "summary": "用户取消操作"}
         return {"action": "ask", "modifications": [], "summary": "无法理解用户反馈，请重述"}
 
@@ -602,6 +609,19 @@ class OrderToHuadingTemplate:
             has_issues = total_unmatched > 0 or review_data["summary"]["alert_count"] > 0
             store_names = ", ".join(r["store_name"] for r in all_store_results)
 
+            # 🔔 EventBus emit: alert_raised（有告警时）
+            if _HAS_EVENT_BUS and review_data.get("summary", {}).get("alert_count", 0) > 0:
+                try:
+                    for _alert in review_data.get("alerts", []):
+                        EventBus.emit("alert_raised", {"session_id": order_session_id,
+                            "timestamp": time.time(),
+                            "severity": _alert.get("severity", "medium"),
+                            "message": _alert.get("message", ""),
+                            "alert_type": _alert.get("type", "sku_low_confidence"),
+                            "details": _alert})
+                except Exception as _e:
+                    print(f"[WARN] emit alert_raised failed: {_e}", flush=True)
+
             # ── SKU 确认检查 ──
             if not confirmed_sku or (total_unmatched > 0 and not isinstance(confirmed_sku, dict)):
                 # 🔔 EventBus emit #7: sku_confirm_needed
@@ -697,6 +717,17 @@ class OrderToHuadingTemplate:
                 total_items = sum(len(r["sku_results"]) + len(r["unmatched_items"]) for r in all_store_results)
                 total_unmatched = sum(len(r["unmatched_items"]) for r in all_store_results)
                 has_issues = total_unmatched > 0 or review_data["summary"]["alert_count"] > 0
+                # 🔔 EventBus emit: user_modified（用户修正了 SKU）
+                if _HAS_EVENT_BUS and _applied_updates:
+                    try:
+                        EventBus.emit("user_modified", {"session_id": order_session_id,
+                            "timestamp": time.time(),
+                            "modifications": [{"type": "sku_update", "seq": u.get("seq",0),
+                                "sku_code": u.get("sku_code",""), "action": u.get("action","")}
+                                for u in _applied_updates],
+                            "modification_count": len(_applied_updates)})
+                    except Exception as _e:
+                        print(f"[WARN] emit user_modified failed: {_e}", flush=True)
                 # 🔔 EventBus emit #8: sku_corrected
                 if _HAS_EVENT_BUS:
                     try:
