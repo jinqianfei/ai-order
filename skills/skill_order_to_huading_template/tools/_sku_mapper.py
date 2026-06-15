@@ -32,29 +32,53 @@ try:
 except ImportError:
     yaml = None
 
+# ── 工作区检测（共用）──
+_ws_env = os.environ.get("AI_ORDER_WORKSPACE", "")
+if not _ws_env:
+    _p_check = os.path.dirname(os.path.abspath(__file__))
+    for _ in range(6):
+        _p_check = os.path.dirname(_p_check)
+        if os.path.isdir(os.path.join(_p_check, "learning", "config")):
+            _ws_env = _p_check
+            break
+_LEARNING_CONFIG_DIR = os.path.join(_ws_env, "learning", "config") if _ws_env else ""
+
 # ── 阈值配置加载（自学习自动维护）──
 _THRESHOLD_CFG = {}
 try:
-    import yaml as _yaml
-    import os as _os
-    _ws = _os.environ.get("AI_ORDER_WORKSPACE", "")
-    if not _ws:
-        _p = _os.path.dirname(_os.path.abspath(__file__))
-        for _ in range(6):
-            _p = _os.path.dirname(_p)
-            if _os.path.isdir(_os.path.join(_p, "learning", "config")):
-                _ws = _p
-                break
-    _tc_path = _os.path.join(_ws, "learning", "config", "threshold_config.yaml") if _ws else ""
-    if _tc_path and _os.path.exists(_tc_path):
+    _tc_path = os.path.join(_LEARNING_CONFIG_DIR, "threshold_config.yaml") if _LEARNING_CONFIG_DIR else ""
+    if _tc_path and os.path.exists(_tc_path):
         with open(_tc_path, "r", encoding="utf-8") as _f:
-            _THRESHOLD_CFG = (_yaml.safe_load(_f) or {}).get("sku_matcher", {})
+            _THRESHOLD_CFG = (yaml.safe_load(_f) or {}).get("sku_matcher", {})
 except Exception:
     pass
 
 def _t(key: str, default: float) -> float:
     """读取阈值配置，带 fallback"""
     return _THRESHOLD_CFG.get(key, default)
+
+
+# ── 关键词配置加载（自学习自动维护，v3.0 模块级缓存）──
+_PRODUCT_TYPES_DEFAULT = ['鸡排', '片', '肠', '翅', '腿', '排', '羊排', '牛排', '蟹', '虾', '鱼', '肉', '丸子']
+_FLAVOR_TYPES_DEFAULT = ['酱料', '粉', '膏']
+_KEYWORD_CFG = {"product_types": _PRODUCT_TYPES_DEFAULT, "flavor_types": _FLAVOR_TYPES_DEFAULT}
+
+def _load_keyword_cfg():
+    """加载/重载关键词配置（模块级调用 + improver apply 后可手动调用）"""
+    global _KEYWORD_CFG
+    try:
+        _kw_path = os.path.join(_LEARNING_CONFIG_DIR, "keywords_config.yaml") if _LEARNING_CONFIG_DIR else ""
+        if _kw_path and os.path.exists(_kw_path):
+            with open(_kw_path, "r", encoding="utf-8") as _f:
+                _cfg = yaml.safe_load(_f) or {}
+            _KEYWORD_CFG = {
+                "product_types": _cfg.get("product_types", _PRODUCT_TYPES_DEFAULT),
+                "flavor_types": _cfg.get("flavor_types", _FLAVOR_TYPES_DEFAULT),
+            }
+    except Exception:
+        pass
+
+_load_keyword_cfg()
 
 
 def _load_yaml_sku_aliases(owner_code: str) -> Dict[str, str]:
@@ -268,28 +292,9 @@ def _has_core_word_match(clean_name: str, sku_name: str) -> bool:
     if order_core in sku_core or sku_core in order_core:
         return True
 
-    # 关键词词库（优先从配置文件读取，否则使用默认值）
-    _product_types_default = ['鸡排', '片', '肠', '翅', '腿', '排', '羊排', '牛排', '蟹', '虾', '鱼', '肉', '丸子']
-    _flavor_types_default = ['酱料', '粉', '膏']
-
-    try:
-        import yaml as _yaml, os as _os
-        _kw_config_path = _os.path.join(
-            _os.environ.get("AI_ORDER_WORKSPACE",
-                _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.abspath(__file__)))))),
-            "learning", "config", "keywords_config.yaml"
-        )
-        if _os.path.exists(_kw_config_path):
-            with open(_kw_config_path, "r", encoding="utf-8") as _f:
-                _kw_cfg = _yaml.safe_load(_f) or {}
-            product_types = _kw_cfg.get("product_types", _product_types_default)
-            flavor_types = _kw_cfg.get("flavor_types", _flavor_types_default)
-        else:
-            product_types = _product_types_default
-            flavor_types = _flavor_types_default
-    except Exception:
-        product_types = _product_types_default
-        flavor_types = _flavor_types_default
+    # 关键词词库（v3.0: 使用模块级缓存，不再每次 IO）
+    product_types = _KEYWORD_CFG.get("product_types", _PRODUCT_TYPES_DEFAULT)
+    flavor_types = _KEYWORD_CFG.get("flavor_types", _FLAVOR_TYPES_DEFAULT)
 
     # 如果核心词包含调料类型词,只比较核心词是否完全相同
     order_is_flavor = any(t in order_core for t in flavor_types)
