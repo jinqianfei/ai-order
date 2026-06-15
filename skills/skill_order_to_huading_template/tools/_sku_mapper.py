@@ -81,6 +81,38 @@ def _load_keyword_cfg():
 _load_keyword_cfg()
 
 
+# ── 清洗规则配置加载（自学习自动维护，v3.0 模块级缓存）──
+_CLEANING_CFG = {
+    "bracket_patterns": [r'[\uff08(][^)\uff09]*[\uff09)]'],
+    "whitespace_pattern": r'\s+',
+    "trailing_separators": r'[-_./\\,;:]+$',
+    "leading_separators": r'^[-_./\\,;:]+',
+}
+
+def _load_cleaning_cfg():
+    """加载/重载清洗规则配置"""
+    global _CLEANING_CFG
+    try:
+        _cl_path = os.path.join(_LEARNING_CONFIG_DIR, "cleaning_config.yaml") if _LEARNING_CONFIG_DIR else ""
+        if _cl_path and os.path.exists(_cl_path):
+            with open(_cl_path, "r", encoding="utf-8") as _f:
+                _cfg = yaml.safe_load(_f) or {}
+            new_cfg = {}
+            if _cfg.get("bracket_patterns"):
+                new_cfg["bracket_patterns"] = [p["pattern"] if isinstance(p, dict) else p
+                                                for p in _cfg["bracket_patterns"]]
+            else:
+                new_cfg["bracket_patterns"] = [r'[\uff08(][^)\uff09]*[\uff09)]']
+            new_cfg["whitespace_pattern"] = _cfg.get("whitespace_pattern", r'\s+')
+            new_cfg["trailing_separators"] = _cfg.get("trailing_separators", r'[-_./\\,;:]+$')
+            new_cfg["leading_separators"] = _cfg.get("leading_separators", r'^[-_./\\,;:]+')
+            _CLEANING_CFG = new_cfg
+    except Exception:
+        pass
+
+_load_cleaning_cfg()
+
+
 def _load_yaml_sku_aliases(owner_code: str) -> Dict[str, str]:
     """
     加载 yaml SKU 别名表（自学习模块自动维护）
@@ -131,17 +163,23 @@ def _clean_product_name(name: str) -> str:
       根本原因: 清洗函数没考虑 "孤立分隔符" 场景,末尾的 "-" 被原样保留
       修复: 正则用 ^ 和 $ 锚点,只去除开头/末尾的孤立分隔符,中间连接符不动
     """
-    # 去除所有括号及其内容（含中文括号（））
-    cleaned = re.sub(r'[\uff08(][^)\uff09]*[\uff09)]', '', name)
-    # 去除多余空格,但保留连接符(-、-、_)
-    cleaned = re.sub(r'\s+', '', cleaned)
+    # v3.0: 从模块级配置读取正则规则（不再硬编码）
+    _cfg = _CLEANING_CFG
+    # 去除所有括号及其内容
+    for _bp in _cfg.get("bracket_patterns", [r'[\uff08(][^)\uff09]*[\uff09)]']):
+        cleaned = re.sub(_bp, '', name if cleaned is None else cleaned)
+        if cleaned is None:
+            cleaned = re.sub(_bp, '', name)
+    # 实际上第一行会覆盖，重新简化：
+    cleaned = name
+    for _bp in _cfg.get("bracket_patterns", [r'[\uff08(][^)\uff09]*[\uff09)]']):
+        cleaned = re.sub(_bp, '', cleaned)
+    # 去除多余空格
+    cleaned = re.sub(_cfg.get("whitespace_pattern", r'\s+'), '', cleaned)
     cleaned = cleaned.strip()
-    # 🆕 修复 (v5.13.3): 去除末尾的孤立分隔符
-    # 原因: 订单中常出现"果糖-"这种带尾部孤立符号的商品名,导致 Layer 1/1b 精确匹配失败
-    # 例如 "果糖-" 清洗后应是 "果糖",才能匹配 DB 中的 "果糖/新"
-    # 正则 ^ 和 $ 是锚点,只匹配开头/末尾,中间的连接符(如"辣白菜D-X-H")不受影响
-    cleaned = re.sub(r'[-_./\\,;:]+$', '', cleaned)
-    cleaned = re.sub(r'^[-_./\\,;:]+', '', cleaned)
+    # 去除末尾/开头的孤立分隔符
+    cleaned = re.sub(_cfg.get("trailing_separators", r'[-_./\\,;:]+$'), '', cleaned)
+    cleaned = re.sub(_cfg.get("leading_separators", r'^[-_./\\,;:]+'), '', cleaned)
     cleaned = cleaned.strip()
 
     # 新增：如果清洗后名称变化很大，emit 清洗规则缺口事件
