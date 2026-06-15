@@ -165,13 +165,8 @@ def _clean_product_name(name: str) -> str:
     """
     # v3.0: 从模块级配置读取正则规则（不再硬编码）
     _cfg = _CLEANING_CFG
-    # 去除所有括号及其内容
-    for _bp in _cfg.get("bracket_patterns", [r'[\uff08(][^)\uff09]*[\uff09)]']):
-        cleaned = re.sub(_bp, '', name if cleaned is None else cleaned)
-        if cleaned is None:
-            cleaned = re.sub(_bp, '', name)
-    # 实际上第一行会覆盖，重新简化：
     cleaned = name
+    # 去除所有括号及其内容
     for _bp in _cfg.get("bracket_patterns", [r'[\uff08(][^)\uff09]*[\uff09)]']):
         cleaned = re.sub(_bp, '', cleaned)
     # 去除多余空格
