@@ -1,5 +1,5 @@
 """
-skill-order-to-huading-template  v5.15.4-slim
+skill-order-to-huading-template  v5.16.2-slim
 
 将客户订单Excel转换为华鼎出库单模板（31字段）
 支持Excel/图片/PDF/文字多种输入格式
@@ -174,7 +174,7 @@ def is_debug_mode() -> bool:
 class OrderToHuadingTemplate:
     """订单转华鼎出库单模板Skill"""
 
-    VERSION = "5.15.4"
+    VERSION = "5.16.2"
 
     # ========== AI调用约束 ==========
     __公开接口__ = ['execute']
@@ -649,6 +649,7 @@ class OrderToHuadingTemplate:
                     "message": "SKU映射结果需要确认，请检查映射对照表后继续生成模板"}
 
             # ── 应用用户 SKU 修正 ──
+            _sku_user_modified = False
             if isinstance(confirmed_sku, dict) and "updates" in confirmed_sku:
                 _applied_updates = []
                 _failed_updates = []
@@ -717,6 +718,7 @@ class OrderToHuadingTemplate:
                 total_items = sum(len(r["sku_results"]) + len(r["unmatched_items"]) for r in all_store_results)
                 total_unmatched = sum(len(r["unmatched_items"]) for r in all_store_results)
                 has_issues = total_unmatched > 0 or review_data["summary"]["alert_count"] > 0
+                _sku_user_modified = bool(_applied_updates)
                 # 🔔 EventBus emit: user_modified（用户修正了 SKU）
                 if _HAS_EVENT_BUS and _applied_updates:
                     try:
@@ -799,7 +801,7 @@ class OrderToHuadingTemplate:
                             "user_confirmed": 0, "user_corrected": 0, "unmatched": total_unmatched},
                         "match_rates": {"store_match_rate": 1.0 if confirmed_store else 0.0,
                             "sku_match_rate": (_auto_matched / _total_skus) if _total_skus else 0.0},
-                        "user_modified": False, "user_confirmed": not has_issues,
+                        "user_modified": _sku_user_modified, "user_confirmed": not has_issues,
                         "processing_time_ms": _elapsed_ms,
                         "skill_version": self.__class__.VERSION,
                         "owner_code": _first_store.get("owner_code",""),

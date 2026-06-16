@@ -1,3 +1,13 @@
+## [5.16.2] - 2026-06-16
+
+### Fixed — 自学习闭环修复
+- 统一 VERSION / SKILL.md / __init__.py / AGENTS.md / MEMORY.md / TOOLS.md 版本真相源，避免订单落库版本错写。
+- 修复 `learning.improver` 在工作区根目录运行时无法导入 `db.connection` 的问题。
+- 修复 `history_replay.py` / `accuracy_comparison.py` 与 improver 的 JSON 验证调用契约不一致。
+- 修复 `order_complete` 将 `user_modified` 覆盖为 `False`，导致效果追踪指标不可信的问题。
+- 修复关键词学习写入 `auto_keywords` 后未进入匹配器词库的问题。
+- 修复效果追踪记录 `cleaning` 类型不符合 `applied_changes` 约束的问题。
+
 ## [5.16.1] - 2026-06-14
 
 ### Added — 匹配阈值配置化 + 自动调优
