@@ -30,8 +30,11 @@ class OpenClawProvider(LLMProvider):
             
             result = subprocess.run(
                 cmd,
-                capture_output=True, text=True, timeout=60
+                capture_output=True, text=True, timeout=180
             )
+            
+            if result.returncode != 0:
+                print(f"[OpenClawProvider] exit={result.returncode}, stderr={result.stderr[:500]}", flush=True)
             
             # 解析 JSON 响应
             data = json.loads(result.stdout)
@@ -51,7 +54,7 @@ class OpenClawProvider(LLMProvider):
             )
             
         except subprocess.TimeoutExpired:
-            raise TimeoutError("OpenClaw inference timed out after 60 seconds")
+            raise TimeoutError("OpenClaw inference timed out after 180 seconds")
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON response from OpenClaw: {e}")
         except Exception as e:

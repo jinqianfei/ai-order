@@ -2,7 +2,7 @@
 
 ## 最新Skill版本
 
-**当前活跃版本**: skill_order_to_huading_template **v5.15.4**（2026-06-12 — P1多门店confirmed_store跨门店泄漏修复）
+**当前活跃版本**: skill_order_to_huading_template **v5.16.3**（2026-06-16 — 自学习闭环修复 + 版本真相源统一）
 
 **路径**: `/Users/jinqianfei/openclaw-workspaces/ai-order/skills/skill_order_to_huading_template/`
 
@@ -91,255 +91,50 @@
 
 ## 最近会话摘要
 
-### 2026-06-12 13:39 — P1 多门店 confirmed_store 跨门店泄漏修复
+### 2026-06-12 — 自动提取摘要
 
-**金姐指示**：修复 P1 bug
+**生成时间**：2026-06-16 11:04 GMT+8
+**窗口**：最近 14 天
 
-**Bug 描述**：
-- 多门店订单中，当 AI 只传 1 个 confirmed_store 时，所有门店的 Excel 行都用第 1 门店的 store_code
-- 根因：`_confirmed_store_for` 的 fallback 循环中 `store.get("_store_key") == store_key` 会把门店A的确认信息错误地返回给门店B
+**📅 Session 摘要**：
+- **2026-06-12.md** — Memory - 2026-06-12
+  - ✅ 自学习模块完整闭环 review（发现方案标注虚高）
+  - ✅ order_corrections 0 条诊断（真实数据 + 多门店 store_corrected 误触发 bug）
+  - ✅ 补 3 个缺失组件（submitted_by/corrected_by DB列 + history_replay.py + accuracy_compariso
+  - ✅ v5.15.2 发布（store_corrected 误触发修复）
+  - ✅ 硬编码全修（P1~P4 + launchd plist × 3）
+- **2026-06-11.md** — Memory - 2026-06-11
+  - 📌 **金姐决定的边界**：
+  - 📌 **金姐决定 (6-11 10:08)**：
+  - ✅ 自学习模块 review + 补齐 6 个缺失 EventBus.emit
+  - ✅ 记忆模块版本号对齐（AGENTS.md / MEMORY.md / TOOLS.md → v5.15.0）
+  - ✅ v5.13.3 修复：果糖末尾孤立分隔符
+- **2026-06-10.md** — Memory - 2026-06-10
+  - 🐛 3. `ccfa001` fix(v5.11.1): P0/P1 硬编码清理 + quantity 透传 bug 修复
+  - 📌 **本次决策**：**不修，记为 P1 待跟进**（避免范围蔓延，金姐决定后续优先级）
+  - ✅ 5 个版本 5 个 commit 提交
+  - ✅ git tag v5.11.2 打完
+  - ✅ 修 v5.11.0 tag 指向正确 commit
+- **2026-06-08.md** — Memory - 2026-06-08
+  - 🐛 - 修复 `init_feedback_collector` 单例 bug：加 `force=True` 参数支持重新订阅
+  - ✅ 删孤儿 skill-version.md
+  - ✅ VERSION/CHANGELOG 对齐到 5.9.0
+  - ✅ 补 MEMORY.md
+  - ✅ 写 2026-06-04~06-07 断档期日志
+- **2026-06-04-to-07.md** — Memory - 2026-06-04 ~ 2026-06-07（断档期追溯）
+- **2026-06-03.md** — Memory - 2026-06-03
+  - ✅ EC2 实例创建 + SSH 密钥配置
+  - ✅ OpenClaw 2026.5.28 安装
+  - ✅ ai-order agent 配置
+  - ✅ Cloudflare Tunnel（临时 URL，每次重启变化）
+  - ✅ Skill v5.8 同步到 EC2
 
-**修复内容**：
-- `_confirmed_store_for`：移除 `_store_key` fallback，仅保留精确 key 查找 + `store_name_submitted` 别名查找
-- Phase B：增加 `_confirmed_store_for` fallback + warn 日志（避免直接 skip）
-- 新增测试：`tests/test_p1_multi_store_fix.py`（4 个用例：隔离/别名/批量/别名匹配）
-
-**测试结果**：
-- P1 专项：4/4 PASSED
-- CI 回归：53/53 SKU 测试通过（前 6 步全过，准确率测试因 DB 超时被 kill）
-
-**产出**：
-- v5.15.3 发布（VERSION + CHANGELOG + SKILL.md + AGENTS.md + MEMORY.md + TOOLS.md）
-
----
-
-### 2026-06-12 09:40 — 自学习模块 Review + 硬编码修复 + 闭环补齐
-
-**金姐指示**：review 整个工作区自学习方案完成情况，补缺 + 修硬编码
-
-**完成情况检查**：
-- 方案文件：`docs/SELF_LEARNING_MODULE_PLAN.md`
-- 发现文件在工作区根目录 `scripts/` + `config/` 下，不在 skill 目录
-- Phase 2/5 的 ✅ 标记与实际不符（分析/通知脚本存在但方案标记有误）
-
-**order_corrections 0 条诊断**：
-- 结论：**真实数据**（19 单全是单门店，用户未纠正过）
-- 发现潜在 bug：多门店 Phase B 中 `store_corrected` 对所有已确认门店都 emit
-- **修复**：新增 `_call_match_store` 对比逻辑，用户选的 ≠ 系统匹配时才 emit
-- 单门店 + 多门店两条路径都修复
-
-**补 3 个缺失组件**：
-- ✅ `submitted_by` / `corrected_by` DB 列已加
-- ✅ `scripts/history_replay.py` 历史订单回放
-- ✅ `scripts/accuracy_comparison.py` 准确率对比报告
-
-**硬编码修复（P1~P4）**：
-- P1: history_replay.py + accuracy_comparison.py 绝对路径 → `_detect_workspace()`
-- P2: notification_config.yaml user_id → `${FEISHU_ADMIN_ID:-默认值}` + sender.py 路径检测
-- P3: 新增 `config/analysis_config.yaml` 统一管理 8 处阈值
-- P4: analyze_learning_data.py `_SKILL_ROOT` 相对路径 → `_detect_workspace()`
-- launchd plist × 3 改为 `$AI_ORDER_WORKSPACE` 单点配置
-
-**产出**：
-- v5.15.2 发布（VERSION + CHANGELOG）
-- `output/self-learning-package-20260612.zip`（77KB，31 个文件）
-- 飞书文档已更新：https://feishu.cn/docx/Lo5QdVMvxoH59Ix6SL5cip4tnhe
-- Python 文件 `/Users/jinqianfei` 出现次数 = 0
-
----
-
-### 2026-06-11 16:40 — 阿里云迁移打包
-
-**金姐指示**：阿里云 OpenClaw agent 已部署，需要把订单映射 skill、自学习系统、记忆模块的相关文件打包迁移。
-
-**完成内容**：
-- 生成 `output/MIGRATION_MANIFEST.md` 迁移清单（9 大类，198 个文件）
-- 生成 `output/ai-order-migration-20260611.tar.gz`（1.6 MB）
-- 包含：Skill 核心代码 v5.15.1、自学习系统、CI 回归测试、工作区配置、记忆模块、文档、数据库导出、运维脚本
-- 已发送到飞书
-
-**CI 准确率指标（v5.15.2 新增）**：
-- `test_mapping_accuracy.py` 新增 D 组仓库映射 + E 组 SKU 映射（D set 20 条盲测数据）
-- 5 维度准确率：门店 4/4、货主 11/11、单位 6/6、仓库 21/21、SKU 40/40
-- **总计 82/82 = 100%**
-- CI 全量 8/8 步骤通过，0 失败
-
-**数据库导出**：
-- `output/数据库全量导出_20260611.xlsx`（8 张表，7976 条记录）
-- `output/数据库表结构导出_20260611.xlsx`（23 张表，314 个字段）
-
-**STORE_SKU_ACCURACY_ISSUES_REPORT.md review 结论**：
-- 第 3 节 SKU 未匹配问题真实存在（"鱼你幸福青花椒酱料（新款）—原椒麻酱料" 被防误匹配规则拦截）
-- 修复建议：Step 1 加别名（5 分钟）+ Step 2 改清洗规则（剥离"—原X"补充描述）
-- 金姐指示：不要直接改原代码，先写测试验证正常商品名不受影响
-
----
-
-### 2026-06-11 13:39 — 自学习模块 review + 补齐 6 个缺失 emit
-
-**金姐指示**：重新 review 记忆模块和自学习模块，判断是否需要更新
-
-**Review 发现**：
-- **自学习模块**：collector.py 订阅 10 个事件，但 __init__.py 只 emit 了 4 个（40% 覆盖率）
-  - 缺失：store_corrected / sku_confirm_needed / sku_confirmed / sku_corrected / order_cancelled / alert_raised
-  - 后果：order_corrections 表永远空，layer_success_rate SKU 层永远 0 条数据
-- **记忆模块**：版本号不一致（AGENTS.md/MEMORY.md 写 v5.14.0，实际 v5.15.0）
-
-**方案 A（自学习模块补齐 emit）**：
-- 在 __init__.py 的合适位置添加 6 个 EventBus.emit 调用
-- 所有 emit 包在 try/except 里，失败不影响主流程
-- 改完后跑 CI 回归 + 事件管道测试
-
-**方案 B（记忆模块文档对齐）**：
-- ✅ AGENTS.md: v5.14.0 → v5.15.0
-- ✅ MEMORY.md 头部: v5.14.0 → v5.15.0
-- ✅ TOOLS.md: v5.13.2 → v5.15.0
-- ✅ MEMORY_SYSTEM_PLAN.md: Phase 3 状态从 🟡 → ✅（脚本已就绪）
-- ❌ Supermemory 云端记忆暂不纳入方案（金姐指示）
-
----
-
-### 2026-06-10 — 5 版本 5 commit + 代码审计 + 端到端回归
-
-**3 轮对话完成**（详细：`memory/2026-06-10.md`）：
-
-#### Round 1: 5 个 commit 分版本提交
-- 代码审计发现 v5.9.0 / 5.10.0 / 5.11.0 / 5.11.1 / 5.11.2 全部 4 版本累积在工作区未提交
-- 5 个 commit (`0039b89` → `f922f5b`) + 1 doc fix (`bfe76d1`) + git tag v5.11.2
-- 修 v5.11.0 tag 错误指向（d199596 → dc86e9f）
-- 补 v5.10.0 CHANGELOG 条目（技术锁原本混在 5.11.0 段尾）
-
-#### Round 2: 完整代码逻辑审计（~6000 行 9 文件）
-- 实测 5 阶段执行流（初始化 → 类型检测 → 门店匹配 → SKU 匹配 → 模板生成）
-- 4 层门店匹配 + 5 层 SKU 匹配精确代码位置
-- 31 字段模板生成逐列取值源
-- EventBus 6 个 emit 埋点精确行号
-- v5.10.0 `__getattribute__` 技术锁真实存在（CHANGELOG 漏记已补）
-
-#### Round 3: 端到端真实订单回归
-- 写 `tests/manual_e2e.py`（7063 字节，9 阶段可暂停打印）
-- **订单 #1 洪洪通 1店1项** → 100% GT 命中，**出库数量=10** ✅
-- **订单 #2 天津仓 2店11项** → 11/11 GT 命中，**出库数量=2,1,1,1,1,1,1,2,2,1,2** ✅
-- **总计 12/12 = 100% GT 准确率**，v5.11.1 quantity 修复在多门店场景也生效
-
-#### 🆕 P1 bug 发现（多门店 + 单 confirmed_store）
-- 订单 #2：只传 1 个 confirmed_store，Excel 11 行**全部**用第 1 门店 store_code
-- 根因：`__init__.py:1785-1797` 多门店循环用同一个 `confirmed_store` 处理所有门店
-- 建议：改 `confirmed_stores: Dict[store_key, store_info]`
-- **本次不修**（避免范围蔓延）→ 记入 PENDING.md
-
-#### AI 自我复盘
-- 诚实性失误：之前"两个事"消息漏写第 2 点，金姐质问时没有先道歉 + 承认
-- 教训：每次说"X 个事"前先确认自己列了 X 个，列不齐就说"我想到了 1 个事"
-
-### 2026-06-09 — 数据库全貌盘点 + 清理 + bug 修复 + 端到端验证
-
-**3 件大事完成**：
-
-#### 1) 数据库半完成迁移事故复盘 + 决策回滚 RDS
-- 4 份主文档 + 1 份 docs/方案 之前混合描述 RDS / Neon / localhost 三套配置
-- 用户金姐明确指示「全部文档对齐为 RDS」 → 全部统一为 `agenthub-db.cjys0msc4x8s.ap-southeast-1.rds.amazonaws.com:5432/neo user=agenthub`
-- `.env` 里 `DB_PASSWORD` 被清空 → 从 `.env.bak.20260609_124314` 恢复（30 字符）
-- **Neon 账号 `904825541@qq.com` 密码 `TV*fB4Fmyr3*7M!` 是明文发到对话里的** → 已从 `.env` 清掉，建议金姐去 console.neon.tech 改密
-- **Neon 项目 `summer-lab` 已不存在** → 历史泄露的 `npg_NG5f1zZFRsgh` 密码自动作废
-- `docs/云端部署迁移方案.md` 选方案 A：保留全文 + 头部 disclaimer「未实施 — 2026-06-09 决策：数据库继续使用 AWS RDS，Neon 迁移方案搁置」
-
-#### 2) 数据库全貌盘点 + 清理（P1+P2+P3）
-- 探查 22 张表 → 7 活跃 + 15 空表
-- **P1.3 DROP product_sku_backup**（3664 行 → 备份到 `/tmp/product_sku_backup_data_20260609_132148.csv` 516KB + 结构到 `/tmp/product_sku_backup_schema_20260609_132147.sql`）
-- **P1.4 DROP shipper**（0 行，被 customer 替代）
-- **P2.1+P2.2 加 2 个 GIN trgm 索引**：`product_sku.sku_name` + `product_name_alias.order_product_name`
-- **P3 15 张空表保留**（按金姐指示）
-- **表数 22 → 20，DB 15 MB，索引 5→7**
-
-#### 3) 端到端真实订单测试 + 修复 v5.9.0/5.11.0 漏修的 bug
-- **发现关键 bug**：`tools/_sku_mapper.py:map_sku_batch` 调 `_build_result` 不返回 quantity → `__init__._match_sku` 里 `r.get("quantity", 0)` 默认 0 → **31 字段 Excel 出库数量恒为 0**
-- **修复**：在 `map_sku_batch` 循环里显式注入 `result["quantity"]` / `unit` / `spec` / `seq`
-- **测试**：用 `docs/test_data/test_set_A_history回流.json` 里的 2 个真实订单（1号洪洪通1店1项 + 9号天津仓2店11项）做端到端
-  - 1号：椰子水950ml → GT `SK231013000200` 大单位 12瓶/件 → 出库数量=10 ✅
-  - 9号：11 个商品全部 GT SKU 匹配（9 个 Layer 1 + 2 个 Layer 1b 去规格匹配）→ 出库数量=2,1,1,1,1,1,1,2,2,1,2 ✅
-  - **总计 12/12 = 100% GT 准确率**
-- **P1-A CHANGELOG 增 [5.11.1] 条目**（标注 quantity bug 修复 + 测试结果）
-- **P1-B VERSION 5.11.0 → 5.11.1**
-- **P1-E auto commit 完成**（commit `2e03f2c`，2026-06-09 13:38:30，message "auto: skill 更新"）
-
-**4 个认知错误纠正**：
-1. `git ls-files` 输出是 git 根相对路径，不是 pwd 相对路径
-2. ai-order 不是独立仓库，git 根是 `/Users/jinqianfei`（大杂烩仓库）
-3. ai-order 里 IDENTITY/AGENTS/MEMORY/docs/data 等都不在 git 里，是金姐工作区私有文件
-4. 有个 auto commit hook 每 3 分钟自动 commit 金姐的工作区修改
-
-**5 个 GIN trgm 索引**（验证后）：
-- `public.product`: `idx_product_product_name_trgm`, `idx_product_sku_code_trgm`
-- `public.product_name_alias`: `idx_product_name_alias_order_name_trgm`
-- `public.product_sku`: `idx_product_sku_sku_name_trgm`
-- `public.shipper`: `idx_shipper_name_trgm`（shipper 表已 DROP，索引级联删除）
-- `public.store_list`: `idx_store_list_store_name_trgm`
-
-**金姐下次可能问的子问题**：
-- 可分享 skill 需要什么配置？（P0 8 项 + P1 6 项 + P2 5 项，详见对话 13:51-13:52 的清单）
-
----
-
-### 2026-06-08（昨天）— 方案 C 推进
-
-**金姐两次指示**：
-1. 「继续做方案 C」— 推进 v5.9.0 Phase 1
-2. 「告诉我现在你的记忆系统是什么」— 交付「好的记忆系统」方案
-
-**方案 C 完成**：
-- [x] **纠错**：VERSION 5.8.0 → 5.9.0、CHANGELOG 补 [5.9.0] Phase 1 条目、SKILL.md 头 5.9 → 5.9.0
-- [x] **短期防护**：`scripts/version_check.sh` 修复（BSD grep 兼容 + sed 表达式修复），验证通过
-- [x] **启动 Phase 1**：事件总线 + 反馈采集器上线
-
-**Phase 1 产出**：
-- `events/bus.py` (40行零依赖) + `events/__init__.py`
-- `learn/collector.py` (370行) + `learn/adapter.py` + `learn/schema.sql` (3表+2视图)
-- 数据库新增表：`order_feedback` / `order_corrections` / `layer_success_rate`
-- 数据库新增列：`order_feedback.data_source TEXT`
-- `__init__.py` 埋入 6 个 `EventBus.emit()` 调用（4 个事件 × 多门店/单门店两处）
-- `scripts/test_event_pipeline.py` 4 项端到端测试 **全过**
-
-**「好的记忆系统」方案**（v1.0）：
-- 写入 `memory/MEMORY_SYSTEM_PLAN.md`（5 层架构 + 防断档机制 + 3 阶段实施路线）
-- 核心原则：**git/代码/mtime 是唯一真相源，MEMORY.md 是手账**
-- 防断档：check_continuity.sh + **每日 10:00 日结** + 启动 4 项自检
-
-**关键学习**：
-- 反例 1：EventBus.clear() 会清空 collector 的所有 handler → 修复：init_feedback_collector 加 `force=True` 参数
-- 反例 2：order_feedback 表缺 data_source 列 → ALTER TABLE 加列
-- 反例 3：__init__.py 的 return + emit 顺序错位 → 重写时确保 emit 在 return 之前
-- 反例 4：test 脚本 `OUT=$(...) || EC=$?` 模式成功时不重置 EC → 改用 `OUT=$(...); EC=$?`
-- 反例 5：SQL UNION ALL 类型不一致 → 全部 cast 成 ::text
-- 重要：MEMORY.md 不应直接当真相源，code/git/mtime 才是
-
-**Phase 2 完成**（16:00）：
-- [x] scripts/check_continuity.sh（断档检测，OK/WARN/P0 三档）
-- [x] scripts/daily_wrap.sh（**每日 10:00 总结昨天**，金姐指定）
-- [x] scripts/startup_check.py（启动 4 项自检：version/git/memory/pending）
-- [x] launchd plist（macOS 原生调度，已部署 + 运行）
-- [x] scripts/install_launchd.sh（install/uninstall/status/test 4 子命令）
-- [x] scripts/test_phase2_guards.sh（**14/14 全部通过**）
-
-**金姐新指示**（15:42）：
-- 「日结时间改 10:00，总结昨天数据」— 已落地
-
-**技术细节**：
-- 订单事件 4 个：`store_confirm_needed` / `store_confirmed` / `order_complete` / `user_modified`
-- 反馈 10 个事件可订阅：上面 4 + `store_corrected` / `sku_confirm_needed` / `sku_confirmed` / `sku_corrected` / `order_cancelled` / `alert_raised`
-- 数据库连接：从 `init_feedback_collector(db_config)` 单例管理
-- 日志位置：`/tmp/ai-order.daily-wrap.out.log` (stdout) + `.err.log` (stderr)
-- 报告位置：`/tmp/daily_wrap_<date>.md`
-
-### 2026-06-04 ~ 2026-06-07（断档期）
-- ⚠️ **日志缺失** — SESSION_END_PROTOCOL 未执行
-- 能从文件系统推断：
-  - 6-4：完成 `SKILL_EVALUATION_REPORT.md`（v5.8 五星评分）
-  - 6-5：v5.9 升级（技术锁 __getattribute__ 入库，5.9.1 增量 patch 被 reset 撤销）
-  - 6-6 / 6-7：未知
-- **教训：以后断档不允许超过 24 小时**
-
----
+**🔧 最近代码变更**（git log）：
+- `c0b327b auto: skill 更新 2026-06-16 10:57:05`
+- `99cfa3c auto: skill 更新 2026-06-16 10:49:57`
+- `ee9e73b auto: skill 更新 2026-06-16 10:29:17`
+- `622b56a auto: skill 更新 2026-06-16 10:28:17`
+- `243ec0d auto: skill 更新 2026-06-16 10:27:16`
 
 ## 数据库架构（2026-06-01 重大更新）
 

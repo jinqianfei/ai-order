@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <style>
+    body { margin: 0; padding: 40px; background: #fff; font-family: -apple-system, sans-serif; }
+    h1 { text-align: center; color: #1a1a2e; font-size: 24px; margin-bottom: 30px; }
+    .mermaid { display: flex; justify-content: center; }
+  </style>
+</head>
+<body>
+  <h1>AI-Powered B2B Lead Generation &amp; Outreach Pipeline</h1>
+  <div class="mermaid">
+graph LR
+    subgraph Phase1["🔍 Phase 1: Discovery"]
+        S1["Tavily Search<br/>Target Companies"] --> S2["URL Extraction<br/>&amp; Filtering"]
+        S2 --> S3["Company Website<br/>Content Extraction"]
+    end
+
+    subgraph Phase2["👤 Phase 2: Contact Intel"]
+        C1["Parse Company<br/>Website Pages"] --> C2["Extract Decision<br/>Maker Contacts"]
+        C2 --> C3["LinkedIn Profile<br/>Cross-Reference"]
+        C3 --> C4["Build Contact<br/>Database"]
+    end
+
+    subgraph Phase3["✍️ Phase 3: Personalization"]
+        P1["Analyze Company<br/>Profile &amp; Needs"] --> P2["AI Generate<br/>Personalized Email"]
+        P2 --> P3["A/B Variant<br/>Generation"]
+    end
+
+    subgraph Phase4["📬 Phase 4: Outreach"]
+        O1["Email Campaign<br/>Queue Builder"] --> O2["Batch Send<br/>w/ SMTP"]
+        O2 --> O3["Open/Click<br/>Tracking"]
+        O3 --> O4["Follow-up<br/>Sequence"]
+    end
+
+    subgraph Results["📊 Results &amp; Analytics"]
+        R1["Campaign<br/>Dashboard"]
+        R2["Reply Detection<br/>&amp; Classification"]
+        R3["Pipeline<br/>Conversion Funnel"]
+    end
+
+    Phase1 --> Phase2 --> Phase3 --> Phase4 --> Results
+
+    style Phase1 fill:#e3f2fd,stroke:#1565c0
+    style Phase2 fill:#fff3e0,stroke:#e65100
+    style Phase3 fill:#f3e5f5,stroke:#7b1fa2
+    style Phase4 fill:#e8f5e9,stroke:#2e7d32
+    style Results fill:#e0f7fa,stroke:#00695c
+  </div>
+  <script>mermaid.initialize({startOnLoad:true, theme:'default'});</script>
+</body>
+</html>

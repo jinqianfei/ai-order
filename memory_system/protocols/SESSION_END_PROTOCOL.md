@@ -59,9 +59,11 @@
 ## 第二步：更新项目记录
 
 对于涉及的项目，立即更新：
-- `projects/<项目名>/files/` — 新增/修改的文件列表
+- `projects/<项目名>/sessions/INDEX.md` — 新增本次会话记录
+- `projects/<项目名>/files/INDEX.md` — 新增/修改的长期文件列表
+- `projects/<项目名>/outputs/INDEX.md` — 新增长期产出物列表
 - `projects/<项目名>/problems/` — 本次遇到的问题
-- `projects/<项目名>/skills/` — 本次使用的 skill 版本
+- `projects/<项目名>/skills/INDEX.md` — 本次使用的 skill 版本
 - `projects/<项目名>/PROJECT.md` — 如有重大进展则更新
 
 ---
@@ -84,6 +86,7 @@
 ## 第五步：凭证检查
 
 - 如果本次会话涉及新的账号/密码/密钥 → 写入 `memory/credentials/INDEX.md`
+- 只记录凭证位置和读取方式，不写明文密码、token 或 secret
 
 ---
 
@@ -98,9 +101,30 @@
 
 ---
 
+## 第七步：运行记忆闭环维护
+
+从工作区根目录执行：
+
+```bash
+python3 memory_system/scripts/extract_memory.py --apply --days 14
+python3 memory_system/scripts/check_quality.py
+python3 memory_system/scripts/reindex.py
+python3 memory_system/scripts/startup_check.py
+```
+
+要求：
+- `extract_memory.py --apply` 必须更新 `MEMORY.md` 的「最近会话摘要」
+- `check_quality.py` 如发现低质量历史日志，不阻断本次结束，但要在 `PENDING.md` 记录待补
+- `reindex.py` 必须重建 `.memory_index/index.json`
+- `startup_check.py` 不应出现 fail；如出现 fail，先修复再结束
+
+---
+
 ## 禁止行为
 
 - ❌ 不确定的信息写入 MEMORY.md
 - ❌ 猜测性的内容写入项目记录
 - ❌ 忘记更新待跟进事项状态
 - ❌ 不写自我复盘
+- ❌ 写 session 日志后不更新 `sessions/INDEX.md`
+- ❌ 更新 MEMORY.md 后不运行质量检查和索引重建

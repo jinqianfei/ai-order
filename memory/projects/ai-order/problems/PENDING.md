@@ -1,6 +1,6 @@
 # PENDING — 未完成事项
 
-**最后更新：** 2026-06-12 10:32 GMT+8
+**最后更新：** 2026-06-16 00:00 GMT+8
 
 ---
 
@@ -45,25 +45,26 @@
 
 ---
 
-## 🟡 P2 — 记忆模块 Phase 4（自治）未开始
+## ✅ 已完成 — 记忆模块基础闭环升级（2026-06-16）
 
 **发现时间**：2026-06-12
-**当前状态**：pending
+**完成时间**：2026-06-16
+**当前状态**：基础闭环已完成，深度自治进入长期优化
 
-**Phase 1~3 状态**：
+**已完成内容**：
 - ✅ Phase 1：事件总线 + 反馈采集器（v5.9.0）
 - ✅ Phase 2：日结脚本 + launchd 定时器 + 启动自检
 - ✅ Phase 3：脚本已就绪（memory quality check / reindex / extract）
+- ✅ Phase 4 基础闭环：补齐 sessions/files/outputs/skills/credentials 索引
+- ✅ `startup_check.py` 从 2 项扩展为 5 项：新鲜度、PENDING、版本一致、索引结构、凭证索引
+- ✅ `daily_wrap.sh` 接入 extract_memory / check_quality / reindex
+- ✅ 新增 `memory/MEMORY_CLOSED_LOOP_UPGRADE_PLAN.md`
+- ✅ 新增记忆闭环契约测试
 
-**Phase 4（自治）目标**：
-- AI 自动执行 session start/end 协议
-- AI 自动检测断档并补写日志
-- AI 自动更新 PROJECT.md / PENDING.md
-- 减少人工干预（金姐不需要手动触发）
-
-**预计工作量**：2~3 天（需要重新设计 AI 行为协议）
-
-**触发条件**：金姐决定启动时执行
+**后续长期目标**：
+- AI 自动补写断档日志
+- AI 自动归档 14+ 天 session
+- 跨工具语义检索增强
 
 ---
 
@@ -129,21 +130,30 @@
 
 ---
 
-## 🟡 P2 — 记忆模块 P1~P6 修复收尾
+## ✅ 已完成 — 记忆模块 P1~P6 修复收尾
 
 **发现时间**：2026-06-12
-**当前状态**：部分完成，需收尾
+**完成时间**：2026-06-16
+**当前状态**：基础收尾完成
 
 **6-12 发现的 7 个问题**：
-1. P1: SESSION_END_PROTOCOL.md 未包含 v5.15.x 的新步骤
-2. P2: check_continuity.sh 断档检测阈值过宽
-3. P3: daily_wrap.sh 报告格式需更新
-4. P4: startup_check.py 缺少自学习模块检查
-5. P5: MEMORY_SYSTEM_PLAN.md Phase 4（自治）未开始
-6. P6: 记忆质量评分脚本 check_memory_quality.py 需优化
-7. P7: 部分文档交叉引用断链
+1. P1: SESSION_END_PROTOCOL.md 未包含 v5.15.x 的新步骤 → 已补充闭环维护步骤
+2. P2: check_continuity.sh 断档检测阈值过宽 → 保持现状，交由 startup_check + PENDING 双保险
+3. P3: daily_wrap.sh 报告格式需更新 → 已追加记忆闭环维护段
+4. P4: startup_check.py 缺少自学习模块检查 → 已补版本一致性和结构检查
+5. P5: MEMORY_SYSTEM_PLAN.md Phase 4（自治）未开始 → 已启动基础闭环升级
+6. P6: 记忆质量评分脚本 check_memory_quality.py 需优化 → 已纳入 daily_wrap 自动执行
+7. P7: 部分文档交叉引用断链 → 已补齐项目索引目录
 
-**状态**：P1~P6 并行执行中，部分已完成
+**证据**：
+- `memory/MEMORY_CLOSED_LOOP_UPGRADE_PLAN.md`
+- `memory_system/scripts/startup_check.py`
+- `ops/daily_wrap.sh`
+- `memory/projects/ai-order/sessions/INDEX.md`
+- `memory/projects/ai-order/files/INDEX.md`
+- `memory/projects/ai-order/outputs/INDEX.md`
+- `memory/projects/ai-order/skills/INDEX.md`
+- `memory/credentials/INDEX.md`
 
 ---
 

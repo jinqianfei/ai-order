@@ -1,10 +1,14 @@
 #!/usr/bin/env python3
 """
-startup_check.py — 记忆系统启动检查（2 项）
+startup_check.py — 记忆系统启动检查（6 项）
 
 检查项：
 1. memory_fresh  — MEMORY.md 距今 < 7 天
 2. no_pending    — PENDING.md 无 🔴 紧急项超 24h
+3. project_version — PROJECT.md 记录版本与 Skill VERSION 一致
+4. project_indexes — 项目记忆目录和 INDEX.md 齐全
+5. credentials_index — credentials/INDEX.md 存在且不含明文密码
+6. memory_index — .memory_index/index.json 存在且覆盖文件
 
 触发：每次 session 启动时（也支持手动跑）
    python3 memory_system/scripts/startup_check.py           # 检查 + 报告
@@ -41,7 +45,12 @@ def _detect_workspace() -> Path:
 
 WORKSPACE = _detect_workspace()
 MEMORY_MD = WORKSPACE / "MEMORY.md"
-PENDING_MD = WORKSPACE / "memory" / "projects" / "ai-order" / "problems" / "PENDING.md"
+MEMORY_PROJECT_DIR = WORKSPACE / "memory" / "projects" / "ai-order"
+PROJECT_MD = MEMORY_PROJECT_DIR / "PROJECT.md"
+PENDING_MD = MEMORY_PROJECT_DIR / "problems" / "PENDING.md"
+CREDENTIALS_INDEX = WORKSPACE / "memory" / "credentials" / "INDEX.md"
+SKILL_VERSION = WORKSPACE / "skills" / "skill_order_to_huading_template" / "VERSION"
+MEMORY_INDEX = WORKSPACE / ".memory_index" / "index.json"
 
 STRICT = "--strict" in sys.argv
 JSON_OUT = "--json" in sys.argv
@@ -94,10 +103,82 @@ def check_no_pending() -> dict:
         return _warn("no_pending", f"读取失败: {e}")
 
 
+def check_project_version() -> dict:
+    """检查: PROJECT.md 中记录的活跃版本与 Skill VERSION 一致"""
+    if not SKILL_VERSION.exists():
+        return _fail("project_version", "Skill VERSION 文件不存在")
+    if not PROJECT_MD.exists():
+        return _fail("project_version", "PROJECT.md 不存在")
+    try:
+        version = SKILL_VERSION.read_text(encoding="utf-8").strip()
+        project_text = PROJECT_MD.read_text(encoding="utf-8")
+        if version in project_text:
+            return _ok("project_version", f"PROJECT.md 已记录当前版本 {version}")
+        return _warn(
+            "project_version",
+            f"PROJECT.md 未记录当前版本 {version}",
+            "请更新 memory/projects/ai-order/PROJECT.md 的当前活跃版本",
+        )
+    except Exception as e:
+        return _warn("project_version", f"读取失败: {e}")
+
+
+def check_project_indexes() -> dict:
+    """检查: 项目记忆目录和 INDEX.md 齐全"""
+    required = [
+        MEMORY_PROJECT_DIR / "sessions" / "INDEX.md",
+        MEMORY_PROJECT_DIR / "files" / "INDEX.md",
+        MEMORY_PROJECT_DIR / "outputs" / "INDEX.md",
+        MEMORY_PROJECT_DIR / "problems" / "PENDING.md",
+        MEMORY_PROJECT_DIR / "skills" / "INDEX.md",
+    ]
+    missing = [str(p.relative_to(WORKSPACE)) for p in required if not p.exists()]
+    if missing:
+        return _fail("project_indexes", f"缺少 {len(missing)} 个项目记忆索引", "; ".join(missing))
+    return _ok("project_indexes", "项目记忆索引齐全")
+
+
+def check_credentials_index() -> dict:
+    """检查: 凭证索引存在，且没有明显明文密码"""
+    if not CREDENTIALS_INDEX.exists():
+        return _warn("credentials_index", "memory/credentials/INDEX.md 不存在")
+    try:
+        text = CREDENTIALS_INDEX.read_text(encoding="utf-8")
+        suspicious = re.findall(r"(?i)(password|secret|token|key)\s*[:=]\s*['\"]?[^\\s`|]+", text)
+        if suspicious:
+            return _fail(
+                "credentials_index",
+                "credentials 索引疑似包含明文敏感值",
+                "; ".join(suspicious[:3]),
+            )
+        return _ok("credentials_index", "凭证索引存在且未发现明显明文敏感值")
+    except Exception as e:
+        return _warn("credentials_index", f"读取失败: {e}")
+
+
+def check_memory_index() -> dict:
+    """检查: 本地记忆索引存在且非空"""
+    if not MEMORY_INDEX.exists():
+        return _warn("memory_index", ".memory_index/index.json 不存在", "运行 memory_system/scripts/reindex.py")
+    try:
+        data = json.loads(MEMORY_INDEX.read_text(encoding="utf-8"))
+        file_count = len(data.get("files", []))
+        keyword_count = len(data.get("keywords", {}))
+        if file_count <= 0 or keyword_count <= 0:
+            return _fail("memory_index", "记忆索引为空", f"files={file_count}, keywords={keyword_count}")
+        return _ok("memory_index", f"索引可用：{file_count} 文件 / {keyword_count} 关键词")
+    except Exception as e:
+        return _warn("memory_index", f"读取失败: {e}")
+
+
 def main() -> int:
     checks = [
         check_memory_fresh(),
         check_no_pending(),
+        check_project_version(),
+        check_project_indexes(),
+        check_credentials_index(),
+        check_memory_index(),
     ]
 
     by_level = {"ok": 0, "warn": 0, "fail": 0}
@@ -113,7 +194,7 @@ def main() -> int:
         return 2 if by_level["fail"] > 0 else (1 if by_level["warn"] > 0 else 0)
 
     print("═══════════════════════════════════════════════════════")
-    print("  记忆系统 — 启动 2 项自检")
+    print("  记忆系统 — 启动 6 项自检")
     print(f"  执行时间: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
     print("═══════════════════════════════════════════════════════")
     print()
@@ -133,7 +214,7 @@ def main() -> int:
     if by_level["warn"] > 0:
         print("  ⚠️  有警告项（不阻断）", flush=True)
         return 1
-    print("  🎉 全部 2 项通过", flush=True)
+    print("  🎉 全部 6 项通过", flush=True)
     return 0
 
 

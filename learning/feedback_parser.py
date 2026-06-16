@@ -50,6 +50,16 @@ def parse_user_feedback(user_message: str, mapping_result: Dict[str, Any],
         # 取消
         cancel_keywords = ["取消", "算了", "不要了"]
         if any(kw in user_msg for kw in cancel_keywords):
+            if emit_event:
+                try:
+                    emit_event("order_cancelled", {
+                        "session_id": session_id,
+                        "timestamp": time.time(),
+                        "reason": "user_cancel",
+                        "user_message": user_message,
+                    })
+                except Exception:
+                    pass
             return {
                 "action": "cancel",
                 "modifications": [],

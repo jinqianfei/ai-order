@@ -41,6 +41,10 @@ _SKILL_ROOT = os.path.join(
 )
 _SKILL_RULES_DIR = os.path.join(_SKILL_ROOT, "field_mapping", "rules")
 _SKILL_SCRIPTS_DIR = os.path.join(_SKILL_ROOT, "scripts")
+if _SKILL_ROOT not in sys.path:
+    sys.path.insert(0, _SKILL_ROOT)
+if _WORKSPACE not in sys.path:
+    sys.path.insert(0, _WORKSPACE)
 
 # yaml 文件路径
 SKU_ALIASES_YAML = os.path.join(_SKILL_RULES_DIR, "sku_aliases_auto.yaml")
@@ -559,8 +563,153 @@ def apply_threshold_changes(suggestions: List[Dict]) -> int:
 
 
 # ════════════════════════════════════════════════════════════
-# CI 验证（P1.2 — 建议前先跑）
+# 关键词词库 / 清洗规则 apply（P2.1 + P2.2）
 # ════════════════════════════════════════════════════════════
+
+def apply_keyword_changes(suggestions: List[Dict]) -> int:
+    """
+    将高频未匹配关键词写入 keywords_config.yaml。
+    格式：
+      auto_keywords:
+        - keyword: "新词"
+          source: self_learning
+          added_date: "2026-06-15"
+          sample_names: ["商品A", "商品B"]
+          occurrence_count: 7
+    """
+    existing = _load_yaml_config(KEYWORDS_CONFIG_YAML)
+    auto_keywords = existing.get("auto_keywords", []) or []
+    existing_kw = {k.get("keyword", "").strip().lower() for k in auto_keywords}
+    product_types = existing.get("product_types", []) or []
+    product_type_keys = {str(k).strip().lower() for k in product_types}
+
+    added = 0
+    today_str = datetime.date.today().isoformat()
+
+    for s in suggestions:
+        keyword = s.get("keyword", "").strip()
+        if not keyword:
+            continue
+        if keyword.lower() in existing_kw:
+            continue
+        auto_keywords.append({
+            "keyword": keyword,
+            "source": "self_learning",
+            "added_date": today_str,
+            "sample_names": (s.get("sample_names") or [])[:5],
+            "occurrence_count": s.get("count", 0),
+        })
+        if keyword.lower() not in product_type_keys:
+            product_types.append(keyword)
+            product_type_keys.add(keyword.lower())
+        existing_kw.add(keyword.lower())
+        added += 1
+
+    if added == 0:
+        return 0
+
+    existing["auto_keywords"] = auto_keywords
+    existing["product_types"] = product_types
+    try:
+        os.makedirs(os.path.dirname(KEYWORDS_CONFIG_YAML), exist_ok=True)
+        with open(KEYWORDS_CONFIG_YAML, "w", encoding="utf-8") as f:
+            yaml.dump(existing, f, allow_unicode=True, default_flow_style=False)
+        print(f"[improver] Added {added} keywords to {KEYWORDS_CONFIG_YAML}", flush=True)
+        return added
+    except Exception as e:
+        print(f"[improver] keyword config write failed: {e}", flush=True)
+        return 0
+
+
+def apply_cleaning_changes(suggestions: List[Dict]) -> int:
+    """
+    将清洗规则缺口记录写入 cleaning_config.yaml（供人工 review 后手动改正则）。
+    不直接修改 _clean_product_name 的正则（高风险），只记录候选规则。
+    格式：
+      candidate_rules:
+        - original_name: "果糖-"
+          cleaned_name: "果糖"
+          suggested_pattern: "[-_./\\\\,;:]+$"
+          source: self_learning
+          added_date: "2026-06-15"
+          occurrence_count: 5
+          status: pending_review
+    """
+    existing = _load_yaml_config(CLEANING_CONFIG_YAML)
+    candidate_rules = existing.get("candidate_rules", []) or []
+    existing_keys = {(r.get("original_name", ""), r.get("cleaned_name", "")) for r in candidate_rules}
+
+    added = 0
+    today_str = datetime.date.today().isoformat()
+
+    for s in suggestions:
+        original = s.get("original_name", "").strip()
+        cleaned = s.get("cleaned_name", "").strip()
+        if not original or not cleaned:
+            continue
+        key = (original, cleaned)
+        if key in existing_keys:
+            continue
+        # 启发式推断正则模式
+        suggested_pattern = _infer_cleaning_pattern(original, cleaned)
+        candidate_rules.append({
+            "original_name": original,
+            "cleaned_name": cleaned,
+            "suggested_pattern": suggested_pattern,
+            "source": "self_learning",
+            "added_date": today_str,
+            "occurrence_count": s.get("count", 0),
+            "status": "pending_review",
+        })
+        existing_keys.add(key)
+        added += 1
+
+    if added == 0:
+        return 0
+
+    existing["candidate_rules"] = candidate_rules
+    try:
+        os.makedirs(os.path.dirname(CLEANING_CONFIG_YAML), exist_ok=True)
+        with open(CLEANING_CONFIG_YAML, "w", encoding="utf-8") as f:
+            yaml.dump(existing, f, allow_unicode=True, default_flow_style=False)
+        print(f"[improver] Added {added} cleaning rule candidates to {CLEANING_CONFIG_YAML}", flush=True)
+        return added
+    except Exception as e:
+        print(f"[improver] cleaning config write failed: {e}", flush=True)
+        return 0
+
+
+def _load_yaml_config(yaml_path: str) -> Dict:
+    """加载 yaml 配置，不存在返回空 dict"""
+    if not os.path.exists(yaml_path):
+        return {}
+    try:
+        with open(yaml_path, "r", encoding="utf-8") as f:
+            return yaml.safe_load(f) or {}
+    except Exception:
+        return {}
+
+
+def _infer_cleaning_pattern(original: str, cleaned: str) -> str:
+    """
+    启发式推断清洗规则正则。
+    比较 original 和 cleaned 的差异，推测需要去除的字符模式。
+    """
+    if original == cleaned:
+        return ""
+    # 检查末尾差异
+    if cleaned == original.rstrip("-_./\\,;: "):
+        return r"[-_./\\,;: ]+$"
+    # 检查开头差异
+    if cleaned == original.lstrip("-_./\\,;: "):
+        return r"^[-_./\\,;: ]+"
+    # 检查中间替换
+    if len(cleaned) < len(original):
+        # 找被替换/删除的部分
+        for i, (a, b) in enumerate(zip(original, cleaned)):
+            if a != b:
+                return f"字符 '{a}' 在位置 {i} 被替换或删除"
+    return "需人工分析"
 
 def run_ci_validation() -> Dict:
     """
@@ -983,7 +1132,35 @@ def run_improvement_cycle(auto_apply: bool = False) -> Dict:
             "notified": bool
         }
     """
-    print("[improver] Starting improvement cycle v2.0...", flush=True)
+    print("[improver] Starting improvement cycle v3.3...", flush=True)
+
+    result = {
+        "suggestions_count": 0,
+        "by_type": {},
+        "ci_passed": None,
+        "replay_success": None,
+        "accuracy_impact": None,
+        "decision": "",
+        "applied": 0,
+        "notified": False,
+        "effect_evaluations": 0,
+    }
+    effect_report = ""
+
+    # Step 0: 效果追踪 — 评估上一次变更的效果（v3.3 闭环补齐）
+    print("[improver] Step 0: Evaluating previous changes...", flush=True)
+    try:
+        from learning.effect_tracker import ensure_schema, evaluate_all_pending, generate_effect_report
+        ensure_schema()
+        _evaluations = evaluate_all_pending()
+        if _evaluations:
+            effect_report = generate_effect_report(_evaluations)
+            result["effect_evaluations"] = len(_evaluations)
+            print(f"[improver] Evaluated {len(_evaluations)} previous changes", flush=True)
+        else:
+            print("[improver] No pending evaluations", flush=True)
+    except Exception as _e:
+        print(f"[improver] Step 0 skipped: {_e}", flush=True)
 
     # Step 1: 生成 5 类建议
     print("[improver] Step 1: Generating suggestions...", flush=True)
@@ -997,16 +1174,10 @@ def run_improvement_cycle(auto_apply: bool = False) -> Dict:
     total = sum(len(v) for v in all_suggestions.values())
     by_type = {k: len(v) for k, v in all_suggestions.items()}
 
-    result = {
+    result.update({
         "suggestions_count": total,
         "by_type": by_type,
-        "ci_passed": None,
-        "replay_success": None,
-        "accuracy_impact": None,
-        "decision": "",
-        "applied": 0,
-        "notified": False,
-    }
+    })
 
     if total == 0:
         print("[improver] 暂无改进建议", flush=True)
@@ -1047,6 +1218,8 @@ def run_improvement_cycle(auto_apply: bool = False) -> Dict:
     # Step 5: 构建完整报告
     print("[improver] Step 5: Building full report...", flush=True)
     full_report = _build_full_report(all_suggestions, ci_result, replay_result, accuracy_result)
+    if effect_report:
+        full_report += f"\n\n---\n\n{effect_report}"
 
     # 附加迭代决策到报告
     full_report += f"\n\n---\n\n## 迭代决策\n\n"
@@ -1081,6 +1254,20 @@ def run_improvement_cycle(auto_apply: bool = False) -> Dict:
             if threshold_applied:
                 print(f"[improver] Applied {threshold_applied} threshold changes", flush=True)
 
+        # 关键词词库（低风险 — 写入 yaml 配置，不改正则）
+        if all_suggestions["keyword"]:
+            keyword_applied = apply_keyword_changes(all_suggestions["keyword"])
+            applied += keyword_applied
+            if keyword_applied:
+                print(f"[improver] Added {keyword_applied} keywords to config", flush=True)
+
+        # 清洗规则候选（低风险 — 只记录候选，不改正则，等人工 review）
+        if all_suggestions["cleaning"]:
+            cleaning_applied = apply_cleaning_changes(all_suggestions["cleaning"])
+            applied += cleaning_applied
+            if cleaning_applied:
+                print(f"[improver] Added {cleaning_applied} cleaning rule candidates", flush=True)
+
         result["applied"] = applied
         print(f"[improver] Auto-applied {applied} entries", flush=True)
     else:
@@ -1088,6 +1275,26 @@ def run_improvement_cycle(auto_apply: bool = False) -> Dict:
             print("[improver] Step 7 skipped: CI not passed", flush=True)
         else:
             print("[improver] Step 7: Waiting for manual confirmation", flush=True)
+
+    # Step 8: 记录本次变更（供下次追踪）— v3.3 闭环补齐
+    if result.get("applied", 0) > 0:
+        print("[improver] Step 8: Recording changes for tracking...", flush=True)
+        try:
+            from learning.effect_tracker import record_batch_changes
+            for change_type, items in all_suggestions.items():
+                if not items:
+                    continue
+                tracker_type = "cleaning_rule" if change_type == "cleaning" else change_type
+                if tracker_type in ("sku_alias", "field_alias", "keyword", "cleaning_rule"):
+                    record_batch_changes(tracker_type, items)
+            # 阈值单独记录
+            threshold_applied = [s for s in all_suggestions.get("threshold", [])
+                                 if s.get("suggested_threshold") is not None]
+            if threshold_applied:
+                record_batch_changes("threshold", threshold_applied)
+            print("[improver] Step 8 complete", flush=True)
+        except Exception as _e:
+            print(f"[improver] Step 8 skipped: {_e}", flush=True)
 
     print(f"[improver] Cycle complete: {result}", flush=True)
     return result

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <style>
+    body { margin: 0; padding: 40px; background: #fff; font-family: -apple-system, sans-serif; }
+    h1 { text-align: center; color: #1a1a2e; font-size: 24px; margin-bottom: 30px; }
+    .mermaid { display: flex; justify-content: center; }
+  </style>
+</head>
+<body>
+  <h1>43-Tool MCP Multi-Agent Supply Chain System</h1>
+  <div class="mermaid">
+graph TB
+    subgraph Orchestrator["🧭 Orchestrator Agent"]
+        O1["Task Router<br/>&amp; Planner"]
+        O2["Shared Memory<br/>&amp; Context"]
+    end
+
+    subgraph Agents["🤖 Specialized Agents"]
+        direction TB
+        AG1["📊 Demand Forecast<br/>Time-Series + External<br/>Factors"]
+        AG2["📦 MRP Agent<br/>BOM Multi-Level<br/>Planning"]
+        AG3["🏭 Inventory Agent<br/>Safety Stock +<br/>Reorder Point"]
+        AG4["📅 Production Agent<br/>Capacity-Constrained<br/>Scheduling"]
+        AG5["🚨 Anomaly Agent<br/>Real-Time Monitor<br/>+ Alert"]
+        AG6["📋 Report Agent<br/>Weekly/Monthly<br/>Auto-Generation"]
+    end
+
+    subgraph Tools["🔧 MCP Tool Registry (43 Tools)"]
+        T1["Data Layer<br/>SQL Query • API Call<br/>File Parse • Web Scrape"]
+        T2["ML Layer<br/>Forecast Model • Anomaly<br/>Score • Classification"]
+        T3["Integration<br/>ERP Connector • WMS<br/>Connector • Email/SMS"]
+        T4["Utils<br/>Calendar • Calculator<br/>Format Converter"]
+    end
+
+    subgraph Events["📡 Event Bus"]
+        EV1["demand.updated"]
+        EV2["inventory.low"]
+        EV3["schedule.changed"]
+        EV4["anomaly.detected"]
+    end
+
+    subgraph External["🌐 External Systems"]
+        EX1["ERP<br/>(Enterprise)"]
+        EX2["WMS<br/>(Warehouse)"]
+        EX3["TMS<br/>(Transport)"]
+        EX4["BI Dashboard"]
+    end
+
+    O1 --> AG1 & AG2 & AG3 & AG4 & AG5 & AG6
+    AG1 & AG2 & AG3 & AG4 & AG5 & AG6 <--> O2
+    AG1 --> T1 & T2
+    AG2 --> T1 & T3
+    AG3 --> T1 & T2 & T3
+    AG4 --> T1 & T3
+    AG5 --> T1 & T2
+    AG6 --> T1 & T4
+
+    AG1 -.-> EV1
+    AG3 -.-> EV2
+    AG4 -.-> EV3
+    AG5 -.-> EV4
+
+    EV1 & EV2 & EV3 & EV4 -.-> O1
+
+    T3 --> EX1 & EX2 & EX3
+    AG6 --> EX4
+
+    style Orchestrator fill:#e8eaf6,stroke:#283593
+    style Agents fill:#e8f5e9,stroke:#1b5e20
+    style Tools fill:#fff3e0,stroke:#e65100
+    style Events fill:#fce4ec,stroke:#880e4f
+    style External fill:#e0f7fa,stroke:#006064
+  </div>
+  <script>mermaid.initialize({startOnLoad:true, theme:'default'});</script>
+</body>
+</html>

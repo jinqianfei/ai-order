@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <style>
+    body { margin: 0; padding: 40px; background: #fff; font-family: -apple-system, sans-serif; }
+    h1 { text-align: center; color: #1a1a2e; font-size: 24px; margin-bottom: 30px; }
+    .mermaid { display: flex; justify-content: center; }
+  </style>
+</head>
+<body>
+  <h1>AI Order Processing System — Architecture (v5.16.2)</h1>
+  <div class="mermaid">
+graph TB
+    subgraph Input["📥 Multi-Format Input"]
+        A1[Excel]
+        A2[PDF]
+        A3[Image/OCR]
+        A4[Plain Text]
+    end
+
+    subgraph Pipeline["⚙️ 5-Step Processing Pipeline"]
+        B1["Step 1: LLM Parse<br/>tools_parse()"]
+        B2["Step 2: Transform<br/>tools_transform()"]
+        B3["Step 3: Store Match<br/>6-Layer • User Confirm"]
+        B4["Step 4: SKU Map<br/>6-Layer • User Confirm"]
+        B5["Step 5: Generate<br/>31-Field Excel"]
+    end
+
+    subgraph Matching["🎯 Matching Engines"]
+        C1["Store Matcher<br/>L0: Phone/Contact<br/>L1: Company<br/>L2: Exact<br/>L3: Fuzzy<br/>L3.5: Keyword<br/>L3.6: Contact Name"]
+        C2["SKU Mapper<br/>L0: Alias Table<br/>L1: Exact<br/>L1b: No-Spec<br/>L2: Fuzzy+Spec<br/>L2.5: Full Scan<br/>L3: Keyword"]
+    end
+
+    subgraph Learning["🧠 Self-Learning Loop"]
+        D1["EventBus<br/>(13 Events)"]
+        D2["Collector"]
+        D3["Daily Analysis"]
+        D4["Auto-Improver"]
+    end
+
+    subgraph DB["🗄️ PostgreSQL (AWS RDS)"]
+        E1["product_sku<br/>(1,832 rows)"]
+        E2["store_list<br/>(3,327 rows)"]
+        E3["product_name_alias"]
+        E4["learning_events"]
+    end
+
+    subgraph Output["📤 Output"]
+        F1["31-Field Huading<br/>Outbound Template"]
+        F2["Mapping Report<br/>(9-Column Review)"]
+    end
+
+    A1 & A2 & A3 & A4 --> B1
+    B1 --> B2
+    B2 --> B3
+    B3 --> C1
+    B3 --> B4
+    B4 --> C2
+    B4 --> B5
+    B5 --> F1
+    B5 --> F2
+
+    B3 -.-> D1
+    B4 -.-> D1
+    D1 --> D2 --> E4 --> D3 --> D4
+    D4 -.->|Auto-apply| C1
+    D4 -.->|Auto-apply| C2
+
+    C1 --> E1
+    C1 --> E2
+    C2 --> E1
+    C2 --> E3
+
+    style Input fill:#e3f2fd,stroke:#1565c0
+    style Pipeline fill:#fff3e0,stroke:#e65100
+    style Matching fill:#f3e5f5,stroke:#7b1fa2
+    style Learning fill:#e8f5e9,stroke:#2e7d32
+    style DB fill:#fce4ec,stroke:#c62828
+    style Output fill:#e0f7fa,stroke:#00695c
+  </div>
+  <script>mermaid.initialize({startOnLoad:true, theme:'default'});</script>
+</body>
+</html>

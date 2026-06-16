@@ -3,7 +3,7 @@
 **项目名：** ai-order
 **老板：** 金姐（金倩菲）
 **创建日期：** 2026-05
-**最后更新：** 2026-06-12
+**最后更新：** 2026-06-16
 
 ---
 
@@ -15,7 +15,7 @@
 
 ## 当前活跃版本
 
-**Skill：** skill_order_to_huading_template **v5.15.2** (2026-06-12)
+**Skill：** skill_order_to_huading_template **v5.16.2** (2026-06-16)
 
 - 事件总线 + 反馈采集器 (v5.9.0) — 10 个 emit 埋点 100% 覆盖
 - LLM Provider 配置化 (v5.11.0) — 4 种 provider + 故障回退链
@@ -26,6 +26,8 @@
 - 自学习补齐 (v5.15.0~v5.15.1) — 6 个缺失 emit + 文档对齐
 - store_corrected 误触发修复 (v5.15.2) — 多门店对比逻辑
 - 硬编码全修 (v5.15.2) — P1~P4 + launchd plist + analysis_config.yaml
+- 自学习闭环修复 (v5.16.2) — 版本真相源统一、improver DB import、JSON 回放契约、user_modified、auto_keywords 生效
+- 记忆闭环升级 (2026-06-16) — sessions/files/outputs/skills/credentials 索引 + startup_check 5 项 + daily_wrap 自动维护
 - 数据库：AWS RDS PostgreSQL (agenthub-db.cjys0msc4x8s.ap-southeast-1.rds.amazonaws.com:5432/neo)
 - git tag: v5.9.0-baseline / v5.11.0 / v5.11.2 / v5.12.0 四个里程碑
 
@@ -46,9 +48,9 @@ ai-order/
 ├── 重构方案_skill_order_to_huading_template.md  ← 5 阶段重构路线
 │
 ├── skills/
-│   └── skill_order_to_huading_template/    ← 唯一活跃 skill (v5.15.2)
+│   └── skill_order_to_huading_template/    ← 唯一活跃 skill (v5.16.2)
 │       ├── SKILL.md                        ← 流程文档
-│       ├── VERSION                         ← "5.15.2"
+│       ├── VERSION                         ← "5.16.2"
 │       ├── CHANGELOG.md                    ← 版本变更日志
 │       ├── __init__.py                     ← 主入口（技术锁 + 10 个 EventBus.emit）
 │       ├── tools/                          ← 解析/匹配/生成工具
@@ -250,7 +252,8 @@ order_feedback / order_corrections 表   ← 自适应学习数据
 | Phase 1 | ✅ | 事件总线 + 反馈采集器 |
 | Phase 2 | ✅ | 日结脚本 + launchd + 启动自检 |
 | Phase 3 | ✅ | 记忆质量检查 + 重索引 + 提取脚本 |
-| Phase 4 | ⏳ | 自治（AI 自动执行 session 协议）|
+| Phase 4 | ✅ | 基础闭环已接入：启动检查、结束协议、索引结构、日结维护、质量检查、重索引 |
+| Phase 5 | ⏳ | 深度自治：自动补写断档、自动归档、跨工具记忆检索增强 |
 
 ---
 

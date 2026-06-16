@@ -55,7 +55,13 @@ def get_recent_session_files(days: int = 7) -> list:
     """获取最近 N 天的 session 日志"""
     cutoff = datetime.now() - timedelta(days=days)
     files = []
-    for f in MEMORY_DIR.glob("2026-*.md"):
+    candidates = list(MEMORY_DIR.glob("2026-*.md"))
+    candidates.extend((MEMORY_DIR / "projects").glob("*/sessions/2026-*.md"))
+    seen = set()
+    for f in candidates:
+        if f in seen:
+            continue
+        seen.add(f)
         # 文件名格式: 2026-06-08.md 或 2026-06-04-to-07.md
         m = re.match(r"2026-(\d{2})-(\d{2})", f.name)
         if m:
@@ -223,10 +229,10 @@ def apply_to_memory_md(summary: str) -> None:
     new_text = text[:start_pos] + "\n" + summary + "\n" + text[end_pos:]
 
     # 备份 + 写
-    backup = MEMORY_MD.with_suffix(".md.bak")
+    backup = Path("/tmp") / f"MEMORY.md.{datetime.now().strftime('%Y%m%d-%H%M%S')}.bak"
     backup.write_text(text, encoding="utf-8")
     MEMORY_MD.write_text(new_text, encoding="utf-8")
-    print(f"  ✅ MEMORY.md 已更新（备份: {backup.name}）")
+    print(f"  ✅ MEMORY.md 已更新（备份: {backup}）")
 
 
 def main() -> int:

@@ -161,6 +161,75 @@ if [ -n "$ANALYSIS_REPORT" ] && [ -f "$ANALYSIS_REPORT" ]; then
     cat "$ANALYSIS_REPORT" >> "$REPORT_FILE"
     echo "  ✅ 分析报告已追加到日结报告"
 fi
+
+# ── 2.6 三套监控整合（v3.0）──
+echo "▶ Step 2.6: 运营监控整合"
+
+# Skill 版本
+SKILL_VERSION="unknown"
+[ -f "$WORKSPACE/skills/skill_order_to_huading_template/VERSION" ] && \
+    SKILL_VERSION=$(cat "$WORKSPACE/skills/skill_order_to_huading_template/VERSION")
+
+# decider 迭代决策
+DECIDER_JSON=""
+if [ -f "$WORKSPACE/skills/skill_operation_monitor/decider.py" ]; then
+    DECIDER_JSON=$(cd "$WORKSPACE" && python3 -c "
+import sys, json
+sys.path.insert(0, 'skills/skill_operation_monitor')
+try:
+    from decider import run_decision_cycle
+    print(json.dumps(run_decision_cycle(), ensure_ascii=False, indent=2))
+except Exception as e:
+    print(json.dumps({'status': 'skipped', 'error': str(e)[:200]}))
+" 2>&1) || DECIDER_JSON='{"status":"error"}'
+fi
+
+# ops_monitor 告警状态
+OPS_JSON=""
+if [ -f "$WORKSPACE/skills/skill_ops_monitor/config.py" ]; then
+    OPS_JSON=$(cd "$WORKSPACE" && python3 -c "
+import sys, json
+sys.path.insert(0, 'skills/skill_ops_monitor')
+try:
+    from config import get_monitor_config
+    print(json.dumps({'status': 'configured'}, ensure_ascii=False))
+except Exception as e:
+    print(json.dumps({'status': 'not_configured', 'error': str(e)[:200]}))
+" 2>&1) || OPS_JSON='{"status":"error"}'
+fi
+
+{
+    echo ""
+    echo "---"
+    echo ""
+    echo "## 📡 运营监控整合（v3.0 统一日报）"
+    echo ""
+    echo "### Skill 版本: **$SKILL_VERSION**"
+    echo ""
+    if [ -n "$DECIDER_JSON" ]; then
+        echo "### 迭代决策（skill_operation_monitor）"
+        echo '```json'
+        echo "$DECIDER_JSON"
+        echo '```'
+        echo ""
+    fi
+    if [ -n "$OPS_JSON" ]; then
+        echo "### 告警监控（skill_ops_monitor）"
+        echo '```json'
+        echo "$OPS_JSON"
+        echo '```'
+        echo ""
+    fi
+    echo "### 自学习效果追踪"
+    EFFECT_REPORT=$(ls -t /tmp/effect_tracker_report_*.md 2>/dev/null | head -1)
+    if [ -n "$EFFECT_REPORT" ] && [ -f "$EFFECT_REPORT" ]; then
+        cat "$EFFECT_REPORT"
+    else
+        echo "*暂无效果追踪报告*"
+    fi
+    echo ""
+} >> "$REPORT_FILE"
+echo "  ✅ 三套监控已整合到日结报告"
 echo ""
 
 # ── 3. 发飞书 ──
@@ -197,6 +266,36 @@ if [ -f "$MEMORY_MD" ]; then
 else
   echo "  ⚠️  $MEMORY_MD 不存在，跳过"
 fi
+echo ""
+
+# ── 4.5 记忆闭环维护 ──
+echo "▶ Step 4.5: 记忆闭环维护"
+MEMORY_MAINTENANCE_OUTPUT=$(cd "$WORKSPACE" && {
+  echo "### startup_check.py"
+  python3 memory_system/scripts/startup_check.py || true
+  echo ""
+  echo "### extract_memory.py --apply --days 14"
+  python3 memory_system/scripts/extract_memory.py --apply --days 14 || true
+  echo ""
+  echo "### check_quality.py"
+  python3 memory_system/scripts/check_quality.py || true
+  echo ""
+  echo "### reindex.py"
+  python3 memory_system/scripts/reindex.py || true
+} 2>&1) || true
+echo "$MEMORY_MAINTENANCE_OUTPUT" | sed 's/^/  /'
+{
+  echo ""
+  echo "---"
+  echo ""
+  echo "## 🧠 记忆闭环维护"
+  echo ""
+  echo '```'
+  echo "$MEMORY_MAINTENANCE_OUTPUT"
+  echo '```'
+  echo ""
+} >> "$REPORT_FILE"
+echo "  ✅ 记忆闭环维护结果已追加到日结报告"
 echo ""
 
 echo "═══════════════════════════════════════════════════════"
