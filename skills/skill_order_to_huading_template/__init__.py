@@ -24,10 +24,19 @@ import copy
 import importlib
 from typing import Dict, Any, Optional, Union, List, Tuple
 
-# ── 统一 .env 加载器 ────────────────────────────────
-from db.connection import _load_dotenv_to_environ
-# ── 统一配置加载器 ──────────────────────────────────
-from config import _get_huading_fields
+# ── 显式导入本地模块（避免与其他 skill 的 config.py 冲突）──
+import importlib.util as _ilu
+_this_dir = os.path.dirname(os.path.abspath(__file__))
+
+_cfg_spec = _ilu.spec_from_file_location("_local_config", os.path.join(_this_dir, "config", "__init__.py"))
+_cfg_mod = _ilu.module_from_spec(_cfg_spec)
+_cfg_spec.loader.exec_module(_cfg_mod)
+_get_huading_fields = _cfg_mod._get_huading_fields
+
+_db_spec = _ilu.spec_from_file_location("_local_db_conn", os.path.join(_this_dir, "db", "connection.py"))
+_db_mod = _ilu.module_from_spec(_db_spec)
+_db_spec.loader.exec_module(_db_mod)
+_load_dotenv_to_environ = _db_mod._load_dotenv_to_environ
 
 # ── 事件总线 + 反馈采集器（懒加载，单例）────────────
 try:
