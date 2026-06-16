@@ -1,3 +1,22 @@
+## [5.16.3] - 2026-06-16
+
+### Added — LLM 解析缓存（同一文件不重复调 LLM）
+- **`_parse_cache`**：在 `OrderToHuadingTemplate` 实例上新增解析结果缓存字典
+- **缓存逻辑**：`execute()` 在 excel/image/pdf/text 解析成功后，将结果存入 `_parse_cache`（key=文件绝对路径）
+- **缓存命中**：同一文件再次调用 `execute()` 时直接复用解析结果，跳过 LLM 调用
+- **效果**：同一订单的多步调用（门店确认→SKU映射→生成模板）从每次 ~50s LLM 调用降至 ~6s，提速 **8 倍**
+- **`__内部初始化__` 白名单**：新增 `_parse_cache` 允许外部读取
+
+### Fixed — 模块导入冲突
+- **`config` 模块冲突**：`from config import` 被 `skill_ops_monitor/config.py` 抢先，改为 `importlib.util.spec_from_file_location` 显式路径导入
+- 修复文件：`__init__.py`、`core/generator.py`、`tools/_template_generator.py`
+- **LLM timeout**：`OpenClawProvider` timeout 从 60s 提升至 180s，并增加 stderr 输出
+
+### CI
+- 53/53 SKU 回归测试通过
+- 洪洪通_1店1项.xlsx 端到端测试通过（Step1=53.7s, Step2=6.4s，缓存命中）
+- 天津仓_2店11项.xlsx 解析+缓存验证通过（Step1=81.7s, Step2=6.4s，缓存命中）
+
 ## [5.16.2] - 2026-06-16
 
 ### Fixed — 自学习闭环修复
