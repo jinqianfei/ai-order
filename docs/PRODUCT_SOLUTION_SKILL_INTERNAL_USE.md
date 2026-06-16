@@ -10,7 +10,7 @@
 
 ### 1.1 背景
 
-`skill_order_to_huading_template` 是将客户订单转换为华鼎出库单模板的技能（当前版本 v5.9.0）。数据库使用 **AWS RDS PostgreSQL**：
+`skill_order_to_huading_template` 是将客户订单转换为华鼎出库单模板的技能（当前版本 v5.16.3）。数据库使用 **AWS RDS PostgreSQL**：
 
 - **Host**: `agenthub-db.cjys0msc4x8s.ap-southeast-1.rds.amazonaws.com`
 - **Port**: `5432`
@@ -21,7 +21,7 @@
 
 | 项目 | 状态 |
 |------|------|
-| Skill 版本 | v5.9.0 |
+| Skill 版本 | v5.16.3 |
 | 数据库 | AWS RDS PostgreSQL |
 | 多租户 | 不考虑（仅内部使用） |
 | 权限控制 | 无（所有用户平等） |

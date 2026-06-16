@@ -9,7 +9,7 @@
 
 ```
 已有资产：
-├─ ai-order（生产级 AI 订单处理，v5.15.4，53 个测试用例，100% 准确率）
+├─ ai-order（生产级 AI 订单处理，v5.16.3，53 个测试用例，100% 准确率）
 ├─ 43 个 MCP 工具的供应链 AI Agent 系统
 ├─ 华鼎标杆客户（3327 门店、1832 SKU、12 个发货方）
 ├─ AI 客服 / AI 账单 / 缺货预警 / B2B 获客（4 个可复用项目）
@@ -67,7 +67,7 @@ and self-learning feedback loops.
 
 What I've built:
 • AI Order Processing System: 1,832 SKUs × 3,327 stores, 6-layer matching,
-  auto-generates 31-field warehouse outbound templates (v5.15.4, 53 test cases)
+  auto-generates 31-field warehouse outbound templates (v5.16.3, 53 test cases)
 • 43-Tool MCP Agent System: demand forecasting, MRP, inventory optimization,
   production scheduling, anomaly detection
 • AI Lead Generation: automated prospect search → contact extraction →

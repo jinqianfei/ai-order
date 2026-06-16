@@ -1,7 +1,7 @@
 # AI建单助手 — 系统总方案
 
 > **最后更新**: 2026-06-14 12:30 GMT+8  
-> **当前 Skill 版本**: v5.16.1（2026-06-14）  
+> **当前 Skill 版本**: v5.16.3（2026-06-16）  
 > **状态**: 🟢 运行中
 
 ---
@@ -39,7 +39,7 @@
 
 ---
 
-## 二、订单处理主流程（v5.16.1）
+## 二、订单处理主流程（v5.16.3）
 
 ### 核心流水线
 
@@ -79,7 +79,7 @@ Step 5: _generate_template()   华鼎 31 字段出库单 Excel
 | Layer 2.5 | 全量相似度 + 关键词加成 | 0.85 max |
 | Layer 3 | 分词关键词匹配 + 包含关系加成 | 0.70+ |
 
-**阈值配置化（v5.16.1）**：26 处 SKU 硬编码 + 13 处门店硬编码已替换为 `threshold_config.yaml` 配置读取，支持自动调优。
+**阈值配置化（v5.16.3）**：26 处 SKU 硬编码 + 13 处门店硬编码已替换为 `threshold_config.yaml` 配置读取，支持自动调优。
 
 ### 确认点
 
@@ -285,7 +285,7 @@ Password: $DB_PASSWORD（环境变量）
 ```
 ai-order/
 ├── skills/
-│   └── skill_order_to_huading_template/    # 主 Skill（v5.16.1）
+│   └── skill_order_to_huading_template/    # 主 Skill（v5.16.3）
 │       ├── __init__.py                      # 主入口（execute()）
 │       ├── VERSION                          # 版本号
 │       ├── CHANGELOG.md                     # 变更日志

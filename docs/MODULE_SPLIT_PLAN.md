@@ -42,7 +42,7 @@ AI建单助手工作区目前把三大职责耦合在同一个目录下：
 
 ```
 ai-order/
-├── skills/skill_order_to_huading_template/     # 订单映射 Skill (v5.15.4)
+├── skills/skill_order_to_huading_template/     # 订单映射 Skill (v5.16.3)
 │   ├── __init__.py          (4153行 — 主入口 + EventBus emit)
 │   ├── tools/               (5个工具文件)
 │   │   ├── _order_parser.py
