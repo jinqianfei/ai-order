@@ -1,17 +1,28 @@
+"""learn.llm shim for backward compatibility.
+
+The canonical LLM provider implementation lives in workspace-level
+``learning.llm``. This package keeps old ``from learn.llm ...`` imports alive.
 """
-LLM Provider 模块 - 多 provider 支持
-支持：
-- OpenClaw 平台内嵌模型（默认）
-- OpenAI 官方 API
-- OpenAI 兼容 API（MiniMax、DeepSeek、Qwen、Kimi 等）
-- 通用 HTTP Provider（Anthropic Claude 等非 OpenAI 协议）
-"""
-from .provider import LLMProvider, ChatRequest, ChatResponse
-from .router import LLMRouter
-from .openclaw import OpenClawProvider
-from .openai import OpenAIProvider
-from .openai_compat import OpenAICompatProvider
-from .custom_http import CustomHTTPProvider
+import os
+import sys
+
+_ws = os.environ.get(
+    "AI_ORDER_WORKSPACE",
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))))
+)
+if _ws not in sys.path:
+    sys.path.insert(0, _ws)
+
+from learning.llm import (  # noqa: F401
+    ChatRequest,
+    ChatResponse,
+    CustomHTTPProvider,
+    LLMProvider,
+    LLMRouter,
+    OpenAICompatProvider,
+    OpenAIProvider,
+    OpenClawProvider,
+)
 
 __all__ = [
     "LLMProvider",
