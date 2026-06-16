@@ -20,9 +20,8 @@ providers:
   # ===== 平台内嵌模型（推荐默认）=====
   # 无需任何配置，自动用当前 OpenClaw agent 的模型
   openclaw:
-    model: "volcengine-ark/ark-code-latest"
     type: openclaw
-    # 当前 agent 模型: volcengine-ark/ark-code-latest
+    # 不指定 model，自动使用当前 OpenClaw agent 的模型
 
   # ===== OpenAI 官方 API =====
   openai:
