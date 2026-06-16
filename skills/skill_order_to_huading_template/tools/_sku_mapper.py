@@ -72,7 +72,14 @@ def _load_keyword_cfg():
             with open(_kw_path, "r", encoding="utf-8") as _f:
                 _cfg = yaml.safe_load(_f) or {}
             _KEYWORD_CFG = {
-                "product_types": _cfg.get("product_types", _PRODUCT_TYPES_DEFAULT),
+                "product_types": (
+                    (_cfg.get("product_types", _PRODUCT_TYPES_DEFAULT) or [])
+                    + [
+                        item.get("keyword", "")
+                        for item in (_cfg.get("auto_keywords", []) or [])
+                        if isinstance(item, dict) and item.get("keyword")
+                    ]
+                ),
                 "flavor_types": _cfg.get("flavor_types", _FLAVOR_TYPES_DEFAULT),
             }
     except Exception:
