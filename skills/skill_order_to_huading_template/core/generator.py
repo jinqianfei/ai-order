@@ -16,7 +16,14 @@ core/generator.py — 模板生成核心模块
 import os
 from typing import Dict, Any, Optional, List
 
-from config import _get_huading_fields
+# 显式导入本地 config（避免与其他 skill 的 config.py 冲突）
+import importlib.util as _ilu
+_cfg_spec = _ilu.spec_from_file_location(
+    "_local_config_gen",
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "config", "__init__.py"))
+_cfg_mod = _ilu.module_from_spec(_cfg_spec)
+_cfg_spec.loader.exec_module(_cfg_mod)
+_get_huading_fields = _cfg_mod._get_huading_fields
 
 
 # ---------------------------------------------------------------------------
