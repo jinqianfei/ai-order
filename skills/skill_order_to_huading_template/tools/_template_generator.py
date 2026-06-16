@@ -9,15 +9,28 @@ import json
 from datetime import datetime
 from typing import Optional, Dict, Any, List
 import yaml
-from db.connection import get_connection
+import importlib.util as _ilu
 
-# 允许独立运行：加入 skill 根目录
+# 显式导入本地模块（避免与其他 skill 的 config.py 冲突）
 _SKILL_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if _SKILL_ROOT not in sys.path:
     sys.path.insert(0, _SKILL_ROOT)
 
-from config import get_huading_fields  # v5.11.2 统一从 yaml 读
-from db.table_names import SKU_TABLE, WAREHOUSE_TABLE  # v5.11.2 表名常量
+_db_conn_spec = _ilu.spec_from_file_location("_local_db_conn_tg", os.path.join(_SKILL_ROOT, "db", "connection.py"))
+_db_conn_mod = _ilu.module_from_spec(_db_conn_spec)
+_db_conn_spec.loader.exec_module(_db_conn_mod)
+get_connection = _db_conn_mod.get_connection
+
+_cfg_spec = _ilu.spec_from_file_location("_local_config_tg", os.path.join(_SKILL_ROOT, "config", "__init__.py"))
+_cfg_mod = _ilu.module_from_spec(_cfg_spec)
+_cfg_spec.loader.exec_module(_cfg_mod)
+get_huading_fields = _cfg_mod.get_huading_fields
+
+_db_tbl_spec = _ilu.spec_from_file_location("_local_db_tbl", os.path.join(_SKILL_ROOT, "db", "table_names.py"))
+_db_tbl_mod = _ilu.module_from_spec(_db_tbl_spec)
+_db_tbl_spec.loader.exec_module(_db_tbl_mod)
+SKU_TABLE = _db_tbl_mod.SKU_TABLE
+WAREHOUSE_TABLE = _db_tbl_mod.WAREHOUSE_TABLE
 
 
 # 华鼎31字段（v5.11.2 改为从 yaml 读，保持同名变量向后兼容）
