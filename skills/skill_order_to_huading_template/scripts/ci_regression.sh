@@ -105,6 +105,12 @@ if [ "$NO_EVENTS" = false ] && [ -f "$SKILL_DIR/scripts/test_event_pipeline.py" 
              "python3 '$SKILL_DIR/scripts/test_event_pipeline.py'"
 fi
 
+# 8. 自学习闭环契约
+if [ -f "$SKILL_DIR/scripts/test_self_learning_closed_loop_contract.py" ]; then
+    run_step "自学习闭环契约" \
+             "python3 '$SKILL_DIR/scripts/test_self_learning_closed_loop_contract.py'"
+fi
+
 # 汇总
 echo ""
 echo "════════════════════════════════════════"
