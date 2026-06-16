@@ -589,6 +589,14 @@ class OrderToHuadingTemplate:
             if not order_data:
                 return get_friendly_error("E101", f"订单解析失败（来源：{order_type}）")
 
+            # ── 写入解析缓存（同一文件下次不再调 LLM）──
+            if _cache_key and _cache_key not in self._parse_cache and order_data:
+                _cached = copy.deepcopy(order_data)
+                _cached["_order_type"] = order_type
+                _cached["_cached_at"] = time.time()
+                self._parse_cache[_cache_key] = _cached
+                print(f"[INFO] 解析结果已缓存: {os.path.basename(_cache_key)}", flush=True)
+
             # ── Step 2: 门店匹配（委托给 core/StoreMatcher.process_all_stores）──
             confirmed_stores = merge_confirmed_store(
                 order_data.get("_confirmed_stores", {}) if isinstance(order_data, dict) else {},
