@@ -19,6 +19,7 @@ import os
 import argparse
 import datetime
 import json as json_mod
+import contextlib
 from pathlib import Path
 
 # ── 路径 & .env ──
@@ -77,6 +78,33 @@ def version_match(db_version, target_version):
     if db_version is None or target_version is None:
         return False
     return normalize_version(db_version) == normalize_version(target_version)
+
+
+def read_current_version():
+    version_path = WORKSPACE / "skills" / "skill_order_to_huading_template" / "VERSION"
+    if version_path.exists():
+        return version_path.read_text(encoding="utf-8").strip()
+    return "unknown"
+
+
+def infer_previous_version(db_config, current_version):
+    conn = psycopg2.connect(**db_config)
+    cur = conn.cursor()
+    cur.execute("""
+        SELECT skill_version, MAX(created_at) AS last_seen
+        FROM order_feedback
+        WHERE skill_version IS NOT NULL
+        GROUP BY skill_version
+        ORDER BY last_seen DESC
+    """)
+    versions = [r[0] for r in cur.fetchall()]
+    cur.close()
+    conn.close()
+    current_norm = normalize_version(current_version)
+    for version in versions:
+        if normalize_version(version) != current_norm:
+            return normalize_version(version)
+    return current_norm
 
 
 def fetch_version_stats(db_config, version):
@@ -389,37 +417,26 @@ def generate_comparison_report(old_version, new_version, old_metrics, new_metric
     return report
 
 
-def main():
-    parser = argparse.ArgumentParser(description="准确率对比报告: 比较两个版本的 order_feedback 指标")
-    parser.add_argument("old_version", help="旧版本号 (如 5.11.2)")
-    parser.add_argument("new_version", help="新版本号 (如 5.13.2)")
-    parser.add_argument("--output", help="输出文件路径", default=None)
-    parser.add_argument("--json", action="store_true", help="同时输出 JSON 格式")
-    args = parser.parse_args()
-
-    today = datetime.datetime.now().strftime("%Y%m%d")
-    output_path = args.output or f"/tmp/accuracy_comparison_{today}.md"
-
+def run_comparison(old_version, new_version, output_path):
     print("=" * 70)
-    print(f"  准确率对比: v{args.old_version} → v{args.new_version}")
+    print(f"  准确率对比: v{old_version} → v{new_version}")
     print("=" * 70)
 
     db_config = get_db_config()
 
     # 获取旧版本数据
-    print(f"\n📊 获取 v{args.old_version} 数据...")
-    old_rows, old_corrections = fetch_version_stats(db_config, args.old_version)
+    print(f"\n📊 获取 v{old_version} 数据...")
+    old_rows, old_corrections = fetch_version_stats(db_config, old_version)
     print(f"    订单数: {len(old_rows)}, 纠正数: {len(old_corrections)}")
 
     # 获取新版本数据
-    print(f"📊 获取 v{args.new_version} 数据...")
-    new_rows, new_corrections = fetch_version_stats(db_config, args.new_version)
+    print(f"📊 获取 v{new_version} 数据...")
+    new_rows, new_corrections = fetch_version_stats(db_config, new_version)
     print(f"    订单数: {len(new_rows)}, 纠正数: {len(new_corrections)}")
 
     if not old_rows:
-        print(f"\n⚠️  v{args.old_version} 没有找到任何 order_feedback 记录")
+        print(f"\n⚠️  v{old_version} 没有找到任何 order_feedback 记录")
         print(f"   可用版本号:")
-        # 列出所有版本
         conn = psycopg2.connect(**db_config)
         cur = conn.cursor()
         cur.execute("SELECT skill_version, COUNT(*) FROM order_feedback GROUP BY skill_version ORDER BY skill_version")
@@ -429,7 +446,7 @@ def main():
         conn.close()
 
     if not new_rows:
-        print(f"\n⚠️  v{args.new_version} 没有找到任何 order_feedback 记录")
+        print(f"\n⚠️  v{new_version} 没有找到任何 order_feedback 记录")
 
     # 计算指标
     old_metrics = compute_metrics(old_rows, old_corrections)
@@ -438,27 +455,55 @@ def main():
     # 生成报告
     print(f"\n📄 生成对比报告...")
     report = generate_comparison_report(
-        args.old_version, args.new_version,
+        old_version, new_version,
         old_metrics, new_metrics, output_path
     )
     print(f"✅ 报告已写入: {output_path}")
+    print(f"\n{report}")
 
-    # JSON 输出
+    old_accuracy = old_metrics.get("sku_match_rate", 0)
+    new_accuracy = new_metrics.get("sku_match_rate", 0)
+    return {
+        "old_version": old_version,
+        "new_version": new_version,
+        "generated_at": datetime.datetime.now().isoformat(),
+        "report_path": output_path,
+        "old_metrics": old_metrics,
+        "new_metrics": new_metrics,
+        "old_accuracy": old_accuracy,
+        "new_accuracy": new_accuracy,
+        "delta": new_accuracy - old_accuracy,
+    }
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="准确率对比报告: 比较两个版本的 order_feedback 指标")
+    parser.add_argument("old_version", nargs="?", help="旧版本号 (如 5.11.2)")
+    parser.add_argument("new_version", nargs="?", help="新版本号 (如 5.13.2)")
+    parser.add_argument("--output", help="输出文件路径", default=None)
+    parser.add_argument("--json", action="store_true", help="同时输出 JSON 格式")
+    parser.add_argument("--json-output", action="store_true", help="仅向 stdout 输出 JSON，日志写 stderr")
+    args = parser.parse_args(argv)
+
+    today = datetime.datetime.now().strftime("%Y%m%d")
+    output_path = args.output or f"/tmp/accuracy_comparison_{today}.md"
+
+    db_config = get_db_config()
+    new_version = normalize_version(args.new_version or read_current_version())
+    old_version = normalize_version(args.old_version or infer_previous_version(db_config, new_version))
+
+    if args.json_output:
+        with contextlib.redirect_stdout(sys.stderr):
+            json_data = run_comparison(old_version, new_version, output_path)
+        print(json_mod.dumps(json_data, ensure_ascii=False, default=str))
+        return
+
+    json_data = run_comparison(old_version, new_version, output_path)
     if args.json:
         json_path = output_path.replace(".md", ".json")
-        json_data = {
-            "old_version": args.old_version,
-            "new_version": args.new_version,
-            "generated_at": datetime.datetime.now().isoformat(),
-            "old_metrics": old_metrics,
-            "new_metrics": new_metrics,
-        }
         with open(json_path, "w", encoding="utf-8") as f:
-            json_mod.dump(json_data, f, ensure_ascii=False, indent=2)
+            json_mod.dump(json_data, f, ensure_ascii=False, indent=2, default=str)
         print(f"✅ JSON 已写入: {json_path}")
-
-    # 输出报告
-    print(f"\n{report}")
 
 
 if __name__ == "__main__":

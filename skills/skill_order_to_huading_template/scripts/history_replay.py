@@ -16,6 +16,9 @@ import os
 import time
 import datetime
 import traceback
+import argparse
+import contextlib
+import json
 from pathlib import Path
 
 # ── 路径 & .env ──
@@ -466,9 +469,8 @@ def generate_report(results, output_path):
     return report
 
 
-def main():
+def run_history_replay(report_path: str) -> dict:
     today = datetime.datetime.now().strftime("%Y%m%d")
-    report_path = f"/tmp/history_replay_{today}.md"
 
     print("=" * 70)
     print(f"  历史订单回放 — {today}")
@@ -550,6 +552,38 @@ def main():
 
     # 也输出到 stdout
     print(f"\n{report}")
+    compared = [r for r in results if r["status"] == "compared"]
+    total_compared = sum(r.get("total_compared", 0) for r in compared)
+    consistent = sum(r.get("consistent", 0) for r in compared)
+    inconsistent = sum(r.get("inconsistent", 0) for r in compared)
+    accuracy = (consistent / total_compared * 100) if total_compared else 0.0
+    return {
+        "report_path": report_path,
+        "orders_total": len(results),
+        "orders_compared": len(compared),
+        "total_compared": total_compared,
+        "consistent": consistent,
+        "inconsistent": inconsistent,
+        "accuracy": round(accuracy, 2),
+        "summary": f"{len(compared)}/{len(results)} orders compared, SKU consistency {accuracy:.2f}%",
+    }
+
+
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="历史订单回放")
+    parser.add_argument("--output", default=None, help="输出报告路径")
+    parser.add_argument("--json-output", action="store_true", help="仅向 stdout 输出 JSON，日志写 stderr")
+    args = parser.parse_args(argv)
+
+    today = datetime.datetime.now().strftime("%Y%m%d")
+    report_path = args.output or f"/tmp/history_replay_{today}.md"
+
+    if args.json_output:
+        with contextlib.redirect_stdout(sys.stderr):
+            summary = run_history_replay(report_path)
+        print(json.dumps(summary, ensure_ascii=False))
+    else:
+        run_history_replay(report_path)
 
 
 if __name__ == "__main__":
