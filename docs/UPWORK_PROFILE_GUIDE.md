@@ -36,7 +36,7 @@ Python AI Agent Developer — Supply Chain & Logistics Automation
 I build AI agents that automate supply chain operations. Not just chatbots — production-grade systems with MCP tools, multi-agent orchestration, and self-learning feedback loops.
 
 What I've built:
-• AI Order Processing System: 1,832 SKUs × 3,327 stores, 6-layer matching, auto-generates 31-field warehouse outbound templates (v5.16.2, 53 test cases, 100% accuracy)
+• AI Order Processing System: 1,832 SKUs × 3,327 stores, 6-layer matching, auto-generates 31-field warehouse outbound templates (v5.16.3, 53 test cases, 100% accuracy)
 • 43-Tool MCP Agent System: demand forecasting, MRP, inventory optimization, production scheduling, anomaly detection
 • AI Lead Generation: automated prospect search → contact extraction → personalized email → batch sending
 • AI Customer Service: contract OCR + auto-reply + ticket routing

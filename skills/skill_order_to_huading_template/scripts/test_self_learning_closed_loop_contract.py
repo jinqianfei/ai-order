@@ -70,7 +70,7 @@ def test_order_complete_user_modified_contract():
     with open(init_path, "r", encoding="utf-8") as f:
         source = f.read()
     assert '"user_modified": _sku_user_modified' in source
-    assert 'VERSION = "5.16.2"' in source
+    assert 'VERSION = "5.16.3"' in source
 
 
 def test_json_entrypoint_contracts():

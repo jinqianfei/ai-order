@@ -39,7 +39,7 @@ def test_project_version_matches_skill_version():
     version = read(WORKSPACE / "skills" / "skill_order_to_huading_template" / "VERSION").strip()
     project = read(PROJECT_DIR / "PROJECT.md")
     skills_index = read(PROJECT_DIR / "skills" / "INDEX.md")
-    assert version == "5.16.2"
+    assert version == "5.16.3"
     assert version in project
     assert version in skills_index
 

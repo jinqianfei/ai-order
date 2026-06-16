@@ -5,5 +5,5 @@
 
 | 日期 | Skill | 版本 | 用途 | 证据 |
 |------|-------|------|------|------|
-| 2026-06-16 | `skill_order_to_huading_template` | 5.16.2 | 当前唯一订单处理 Skill；自学习闭环修复后版本 | `skills/skill_order_to_huading_template/VERSION` |
+| 2026-06-16 | `skill_order_to_huading_template` | 5.16.3 | 当前唯一订单处理 Skill；LLM解析缓存+config导入修复 | `skills/skill_order_to_huading_template/VERSION` |
 
