@@ -56,7 +56,7 @@
 - ✅ Phase 2：日结脚本 + launchd 定时器 + 启动自检
 - ✅ Phase 3：脚本已就绪（memory quality check / reindex / extract）
 - ✅ Phase 4 基础闭环：补齐 sessions/files/outputs/skills/credentials 索引
-- ✅ `startup_check.py` 从 2 项扩展为 5 项：新鲜度、PENDING、版本一致、索引结构、凭证索引
+- ✅ `startup_check.py` 从 2 项扩展为 6 项：新鲜度、PENDING、版本一致、索引结构、凭证索引、记忆索引
 - ✅ `daily_wrap.sh` 接入 extract_memory / check_quality / reindex
 - ✅ 新增 `memory/MEMORY_CLOSED_LOOP_UPGRADE_PLAN.md`
 - ✅ 新增记忆闭环契约测试

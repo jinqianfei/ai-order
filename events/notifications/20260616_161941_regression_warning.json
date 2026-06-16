@@ -1,0 +1,13 @@
+{
+  "type": "regression_warning",
+  "title": "⚠️ 效果追踪回退预警",
+  "message": "**1** 项变更导致指标回退：\n\n- 变更 #99（keyword）：SKU 匹配率 -3.2%\n\n> 建议回滚这些变更，回复「回滚 #ID」操作",
+  "priority": "high",
+  "created_at": "2026-06-16T16:19:41.465407",
+  "status": "sent",
+  "channels": [
+    "auto"
+  ],
+  "sent_at": "2026-06-16T16:20:08.743333",
+  "sent_via": "auto"
+}

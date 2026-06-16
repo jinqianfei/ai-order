@@ -1,0 +1,12 @@
+{
+  "type": "threshold_tuning",
+  "title": "🎯 阈值调优建议",
+  "message": "发现 **2** 个阈值调优建议：\n\n| 类型 | 层 | 成功率 | 纠正率 | 建议 |\n|------|-----|--------|--------|------|\n| sku | layer1_exact | 94% | 35% | 0.92 |\n| store | layer2_fuzzy | 78% | 42% | 0.75 |\n\n> 回复「确认阈值」应用 / 「跳过」忽略",
+  "priority": "normal",
+  "created_at": "2026-06-16T16:11:51.524051",
+  "status": "pending",
+  "channels": [
+    "feishu",
+    "dingtalk"
+  ]
+}

@@ -22,7 +22,7 @@
 |---|------|------|
 | 1 | 断档 4 天（6-4~6-7）| `check_continuity.sh` + `daily_wrap.sh` 自动守护 |
 | 2 | 版本号错乱（5.8 / 5.9 / 5.9.0）| `version_check.sh` 三处一致校验 |
-| 3 | 无版本号自检 | `startup_check.py` 4 项自检 |
+| 3 | 无版本号自检 | `startup_check.py` 6 项自检 |
 | 4 | MEMORY.md 当真相源 | 协议强化：`git/code/mtime` 是真相源 |
 
 ### v1.0 未解决的 5 个问题（✅ 全部已解决）
@@ -61,7 +61,7 @@
 | 每日 10:00 | `daily_wrap.sh` | 每天 | 飞书提醒 + 写 `/tmp/daily_wrap_*.md` |
 | 订单完成 | `order_complete` 事件 | 每次 | 写入 `order_feedback` 表 |
 | 用户纠正 | `store_corrected` / `sku_corrected` 事件 | 每次 | 写入 `order_corrections` 表 |
-| 启动 4 项 | `startup_check.py` | 每次启动 | 失败 → 警告，不阻断 |
+| 启动 6 项 | `startup_check.py` | 每次启动 | 失败 → 警告，不阻断 |
 | 断档 > 24h | `check_continuity.sh` | 每日 | 飞书 P0 告警 |
 
 ### 1.2 L2 协议层（流程约束）— **v2.0 升级**
@@ -80,7 +80,7 @@ memory/
 
 | 协议 | v1.0 | v2.0 |
 |------|------|------|
-| **START** | 启动问询 + 按需读取 | **强制 4 项自检**（version/git/memory/pending）|
+| **START** | 启动问询 + 按需读取 | **强制 6 项自检**（memory/PENDING/version/index/credentials/memory_index）|
 | **END** | 6 步流程 | **强制 7 步**（v1 基础 + git commit + tag 验证）|
 | **PENDING** | 人工维护 | **半自动**（从 MEMORY.md/session 自动提取未完成项）|
 | **MEMORY** | 自由编辑 | **结构化**（每条带 git_commit_sha + last_verified_at）|
@@ -194,7 +194,7 @@ quality = (has_when + has_what + has_why + has_witness) / 4
 - 写 `/tmp/daily_wrap_<date>.md`
 - 更新 MEMORY.md 时间戳
 
-### 3.3 启动 4 项自检（已上线）
+### 3.3 启动 6 项自检（已上线）
 
 `scripts/startup_check.py` — 每次启动
 1. version_check（VERSION/CHANGELOG/SKILL.md 一致）

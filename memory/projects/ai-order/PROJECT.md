@@ -28,7 +28,7 @@
 - 硬编码全修 (v5.15.2) — P1~P4 + launchd plist + analysis_config.yaml
 - 自学习闭环修复 (v5.16.2) — 版本真相源统一、improver DB import、JSON 回放契约、user_modified、auto_keywords 生效
 - LLM解析缓存 + config导入修复 (v5.16.3) — 同一文件不重复调LLM，Step2从~50s降至~6s
-- 记忆闭环升级 (2026-06-16) — sessions/files/outputs/skills/credentials 索引 + startup_check 5 项 + daily_wrap 自动维护
+- 记忆闭环升级 (2026-06-16) — sessions/files/outputs/skills/credentials 索引 + startup_check 6 项 + daily_wrap 自动维护
 - 数据库：AWS RDS PostgreSQL (agenthub-db.cjys0msc4x8s.ap-southeast-1.rds.amazonaws.com:5432/neo)
 - git tag: v5.9.0-baseline / v5.11.0 / v5.11.2 / v5.12.0 四个里程碑
 
@@ -125,7 +125,7 @@ ai-order/
 │   ├── notification_sender.py              ← 飞书通知
 │   ├── check_continuity.sh                 ← 断档检测
 │   ├── daily_wrap.sh                       ← 每日 10:00 日结
-│   ├── startup_check.py                    ← 启动 4 项自检
+│   ├── startup_check.py                    ← 启动 6 项自检
 │   ├── check_memory_quality.py             ← 记忆质量评分
 │   ├── extract_memory.py                   ← 记忆提取
 │   ├── reindex_memory.py                   ← 记忆重索引

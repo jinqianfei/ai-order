@@ -381,7 +381,14 @@ def test_5_improver():
             "keyword": keywords,
             "cleaning": cleaning,
         }
-        report = improver._build_full_report(all_suggestions, ci_result, [])
+        replay_result = {"skipped": True, "reason": "e2e component check skips slow history replay"}
+        accuracy_result = {"skipped": True, "reason": "e2e component check skips version accuracy comparison"}
+        report = improver._build_full_report(
+            all_suggestions,
+            ci_result,
+            replay_result,
+            accuracy_result,
+        )
         report_ok = len(report) > 100
         print(f"  ✅ 5f-2: 报告构建 = {report_ok} ({len(report)} chars)")
         

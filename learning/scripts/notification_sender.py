@@ -118,7 +118,7 @@ def _enqueue_notification(notification_type: str, message: str,
         "priority": priority,  # "high" / "normal" / "low"
         "created_at": now.isoformat(),
         "status": "pending",
-        "channels": ["feishu"],  # agent 模式下由 agent 决定通道
+        "channels": ["auto"],  # auto = Agent 用当前绑定的通道发送（飞书/钉钉均可）
     }
 
     with open(filepath, "w", encoding="utf-8") as f:
