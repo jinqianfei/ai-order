@@ -183,7 +183,7 @@ def is_debug_mode() -> bool:
 class OrderToHuadingTemplate:
     """订单转华鼎出库单模板Skill"""
 
-    VERSION = "5.16.2"
+    VERSION = "5.16.3"
 
     # ========== AI调用约束 ==========
     __公开接口__ = ['execute']
@@ -287,6 +287,9 @@ class OrderToHuadingTemplate:
         self._sku_matcher = SKUMatcher(db_config)
         self._generator = TemplateGenerator(self.warehouse_code_map)
         self._parser = OrderParser()
+
+        # ── LLM 解析结果缓存（同一文件不重复调 LLM）──
+        self._parse_cache: Dict[str, Dict] = {}
 
         # ── 自学习模块软加载 ──
         self._learning_enabled = False
@@ -497,14 +500,25 @@ class OrderToHuadingTemplate:
 
         try:
             # ── Step 1: 解析订单数据 ──
+            # ── 解析缓存 key（文件路径标准化）──
+            _cache_key = os.path.abspath(order_input) if order_input and os.path.exists(str(order_input)) else None
+
             if order_data_cache:
                 order_data = order_data_cache
                 extracted_from = order_data.get("_extracted_from", order_type if order_type != "auto" else "cache")
+            elif _cache_key and _cache_key in self._parse_cache:
+                # 命中缓存，跳过 LLM 解析
+                order_data = copy.deepcopy(self._parse_cache[_cache_key])
+                order_type = order_data.get("_order_type", "excel")
+                extracted_from = f"{order_type}_cached"
+                print(f"[INFO] 解析缓存命中: {_cache_key}", flush=True)
             elif order_type == "auto":
                 order_type = object.__getattribute__(self, '_detect_input_type')(order_input)
 
             if order_data_cache:
                 pass
+            elif _cache_key and _cache_key in self._parse_cache:
+                pass  # 已在上面处理
             elif order_type == "image":
                 if ocr_result:
                     order_data = object.__getattribute__(self, '_handle_ocr_result')(ocr_result)
