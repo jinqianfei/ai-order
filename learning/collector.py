@@ -452,7 +452,7 @@ class FeedbackCollector:
             return {r[0]: {
                 "description": r[1],
                 "total": r[2], "success": r[3],
-                "corrected": r[4], "rate": r[6], "avg_score": r[7]
+                "corrected": r[4], "rate": r[5], "avg_score": r[6]
             } for r in rows}
         except Exception as e:
             print(f"[FeedbackCollector] get_layer_stats error: {e}", flush=True)
