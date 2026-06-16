@@ -1005,18 +1005,69 @@ def _build_full_report(all_suggestions: Dict, ci_result: Dict,
     return "\n".join(lines)
 
 
-def _notify_full_report(report: str) -> bool:
-    """推送完整报告"""
+def _get_notifier():
+    """获取 notification_sender 模块"""
+    scripts_dir = os.path.join(os.path.dirname(__file__), "scripts")
+    if scripts_dir not in sys.path:
+        sys.path.insert(0, scripts_dir)
     try:
-        scripts_dir = os.path.join(os.path.dirname(__file__), "scripts")
-        if scripts_dir not in sys.path:
-            sys.path.insert(0, scripts_dir)
-        from notification_sender import send_notification
-        return send_notification("improvement_report", report)
+        import notification_sender
+        return notification_sender
     except ImportError as e:
         print(f"[improver] notification_sender import failed: {e}", flush=True)
+        return None
+
+
+def _notify_per_type(all_suggestions: Dict):
+    """逐类即时通知：每类建议单独推送（飞书+钉钉双通道）"""
+    notifier = _get_notifier()
+    if not notifier:
+        return
+
+    # SKU 别名
+    if all_suggestions.get("sku_alias"):
+        try:
+            notifier.notify_alias_expansion(all_suggestions["sku_alias"])
+        except Exception as e:
+            print(f"[improver] notify alias_expansion failed: {e}", flush=True)
+
+    # 字段别名
+    if all_suggestions.get("field_alias"):
+        try:
+            notifier.notify_alias_expansion(all_suggestions["field_alias"])
+        except Exception as e:
+            print(f"[improver] notify field_alias failed: {e}", flush=True)
+
+    # 关键词
+    if all_suggestions.get("keyword"):
+        try:
+            notifier.notify_keyword_update(all_suggestions["keyword"])
+        except Exception as e:
+            print(f"[improver] notify keyword_update failed: {e}", flush=True)
+
+    # 清洗规则
+    if all_suggestions.get("cleaning"):
+        try:
+            notifier.notify_cleaning_rule(all_suggestions["cleaning"])
+        except Exception as e:
+            print(f"[improver] notify cleaning_rule failed: {e}", flush=True)
+
+    # 阈值调优
+    if all_suggestions.get("threshold"):
+        try:
+            notifier.notify_threshold_tuning(all_suggestions["threshold"])
+        except Exception as e:
+            print(f"[improver] notify threshold_tuning failed: {e}", flush=True)
+
+
+def _notify_full_report(report: str) -> bool:
+    """推送完整报告"""
+    notifier = _get_notifier()
+    if not notifier:
         print(f"[improver] Report content (first 500 chars):\n{report[:500]}", flush=True)
         return False
+    try:
+        return notifier.send_notification("improvement_report", report)
     except Exception as e:
         print(f"[improver] Notification failed: {e}", flush=True)
         return False
@@ -1024,13 +1075,11 @@ def _notify_full_report(report: str) -> bool:
 
 def _notify_ci_failure(ci_result: Dict, suggestions_summary: str) -> bool:
     """CI 失败时发送告警"""
-    msg = f"❌ CI 验证失败，改进建议未推送\n\nCI 输出：\n{ci_result.get('stderr', ci_result.get('error', ''))[:500]}\n\n待处理建议数：{suggestions_summary}"
+    notifier = _get_notifier()
+    if not notifier:
+        return False
     try:
-        scripts_dir = os.path.join(os.path.dirname(__file__), "scripts")
-        if scripts_dir not in sys.path:
-            sys.path.insert(0, scripts_dir)
-        from notification_sender import send_notification
-        return send_notification("ci_failure", msg)
+        return notifier.notify_ci_failure(ci_result, suggestions_summary)
     except Exception:
         return False
 
@@ -1187,6 +1236,10 @@ def run_improvement_cycle(auto_apply: bool = False) -> Dict:
         return result
 
     print(f"[improver] Found {total} suggestions: {by_type}", flush=True)
+
+    # Step 1.5: 逐类即时通知（发现即推，不等完整周期）
+    print("[improver] Step 1.5: Sending per-type notifications...", flush=True)
+    _notify_per_type(all_suggestions)
 
     # Step 2: CI 验证（金姐要求：建议前必须先验证）
     print("[improver] Step 2: Running CI validation...", flush=True)

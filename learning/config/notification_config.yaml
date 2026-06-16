@@ -11,36 +11,43 @@ users:
     channel: "feishu"
     role: "admin"  # 管理员，接收所有通知
 
-  # 钉钉用户（迁移后添加）
-  # - user_id: "${DINGTALK_ADMIN_ID}"
-  #   name: "金倩菲"
-  #   channel: "dingtalk"
-  #   role: "admin"
+  - user_id: "${DINGTALK_ADMIN_ID:-}"
+    name: "金倩菲"
+    channel: "dingtalk"
+    role: "admin"
 
 # 审批类型 → 通知接收人
 approvers:
-  alias_expansion:  # 别名表扩充
+  alias_expansion:       # 别名表扩充
     - role: "admin"
-
-  threshold_tuning:  # 阈值调优
+  threshold_tuning:      # 阈值调优
     - role: "admin"
-
-  keyword_update:  # 关键词库更新
+  keyword_update:        # 关键词库更新
     - role: "admin"
-
-  cleaning_rule:  # 清洗规则增强
+  cleaning_rule:         # 清洗规则增强
     - role: "admin"
-
-  new_layer:  # 新增匹配层
+  new_layer:             # 新增匹配层
+    - role: "admin"
+  regression_warning:    # 效果追踪回退预警
+    - role: "admin"
+  improvement_report:    # 完整改进报告
+    - role: "admin"
+  ci_failure:            # CI 验证失败
+    - role: "admin"
+  daily_summary:         # 每日别名汇总
     - role: "admin"
 
 # 推送频率
 schedule:
-  alias_expansion: "daily_10am"  # 每天10点汇总
-  threshold_tuning: "on_discovery"  # 发现即推
-  keyword_update: "on_discovery"
-  cleaning_rule: "on_discovery"
+  alias_expansion: "daily_10am"       # 每天10点汇总
+  threshold_tuning: "on_discovery"    # 发现即推
+  keyword_update: "on_discovery"      # 发现即推
+  cleaning_rule: "on_discovery"       # 发现即推
   new_layer: "on_discovery"
+  regression_warning: "on_discovery"  # 回退即推
+  improvement_report: "on_completion" # 改进周期完成后推
+  ci_failure: "on_failure"            # CI 失败即推
+  daily_summary: "daily_10am"
 
 # IM 渠道配置
 channels:
@@ -49,5 +56,5 @@ channels:
     # webhook 从环境变量 FEISHU_WEBHOOK 读取
 
   dingtalk:
-    enabled: false
+    enabled: true
     # webhook 从环境变量 DINGTALK_ROBOT_WEBHOOK 读取

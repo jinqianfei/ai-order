@@ -374,6 +374,20 @@ def evaluate_all_pending() -> List[Dict]:
         _mark_evaluated(change["id"], result)
 
     print(f"[effect_tracker] Evaluated {len(results)} changes", flush=True)
+
+    # 检查回退预警（有 regression 立即推送飞书+钉钉）
+    regressions = [r for r in results if r.get("verdict") == "regression"]
+    if regressions:
+        print(f"[effect_tracker] ⚠️ {len(regressions)} regression(s) detected, sending alert...", flush=True)
+        try:
+            _scripts_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "learning", "scripts")
+            if _scripts_dir not in sys.path:
+                sys.path.insert(0, _scripts_dir)
+            from notification_sender import notify_regression_warning
+            notify_regression_warning(results)
+        except Exception as e:
+            print(f"[effect_tracker] regression notification failed: {e}", flush=True)
+
     return results
 
 
