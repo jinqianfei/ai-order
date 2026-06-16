@@ -191,7 +191,7 @@ class OrderToHuadingTemplate:
     __内部初始化__ = [
         '_load_warehouse_mapping', '_load_field_mapping', '_check_db_connection', '_init_db_repos',
         '_store_matcher', '_sku_matcher', '_generator', '_parser',
-        '_learning_enabled', '_current_session_id',
+        '_learning_enabled', '_current_session_id', '_parse_cache',
     ]
 
     REQUIRED_CONFIG = {
